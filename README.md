@@ -10,6 +10,7 @@ Ensure you have Python 3.10+ and a C++17 compiler (g++) installed.
 
 A lightweight, folder-driven framework for generating competitive-programming testcases, inspired by [TCFrame](https://tcframe.toki.id/docs).
 
+
 **No JSON config required.** Just folders, solutions, and spec.py files.
 
 ## Quick Start

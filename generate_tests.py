@@ -39,7 +39,7 @@ def load_spec(spec_path):
     return mod.spec
 
 
-def discover_problems(contest_dir, problem_filter=None):
+def discover_problems(contest_dir, problem_filter=None, require_solution=True):
     contest_dir = Path(contest_dir)
     if not contest_dir.is_dir():
         raise FileNotFoundError(f"Contest folder not found: {contest_dir}")
@@ -52,7 +52,7 @@ def discover_problems(contest_dir, problem_filter=None):
             continue
         solution = entry / "solution.cpp"
         spec_file = entry / "spec.py"
-        if not solution.exists():
+        if require_solution and not solution.exists():
             logger.warning(f"Skipping {entry.name}: no solution.cpp")
             continue
         if not spec_file.exists():
@@ -137,23 +137,24 @@ def process_problem(prob_dir, seed, timeout, no_solve, keep):
             if out.stat().st_size == 0:
                 raise RuntimeError(f"{out.name} is empty")
 
-    zip_path = prob_dir / f"{pid}.zip"
-    create_problem_zip(tc_dir, zip_path, pid)
-    in_count, out_count = verify_zip(zip_path)
-    logger.info(f"  ZIP verified: {in_count} inputs, {out_count} outputs")
-    logger.info(f"  ZIP created: {zip_path}")
+        zip_path = prob_dir / f"{pid}.zip"
+        create_problem_zip(tc_dir, zip_path, pid)
+        in_count, out_count = verify_zip(zip_path)
+        logger.info(f"  ZIP verified: {in_count} inputs, {out_count} outputs")
+        logger.info(f"  ZIP created: {zip_path}")
 
     return True
 
 
 def dry_run(contest_dir, problem_filter=None):
     contest_dir = Path(contest_dir)
-    problems = discover_problems(contest_dir, problem_filter)
+    problems = discover_problems(contest_dir, problem_filter, require_solution=False)
 
     print(f"Contest: {contest_dir.name}")
     print(f"Problems found: {len(problems)}")
     print()
 
+    success = True
     for prob_dir in problems:
         pid = prob_dir.name
         try:
@@ -171,7 +172,9 @@ def dry_run(contest_dir, problem_filter=None):
         except Exception as e:
             print(f"  {pid}")
             print(f"    Status: ERROR - {e}")
+            success = False
         print()
+    return success
 
 
 def main():
@@ -196,14 +199,16 @@ def main():
 
     if args.dry_run:
         try:
-            dry_run(contest_dir, problem_filter=args.problem)
+            success = dry_run(contest_dir, problem_filter=args.problem)
+            if not success:
+                sys.exit(1)
         except (FileNotFoundError, ValueError) as e:
             logger.error(str(e))
             sys.exit(1)
         return
 
     try:
-        problems = discover_problems(contest_dir, problem_filter=args.problem)
+        problems = discover_problems(contest_dir, problem_filter=args.problem, require_solution=not args.no_solve)
     except (FileNotFoundError, ValueError) as e:
         logger.error(str(e))
         sys.exit(1)

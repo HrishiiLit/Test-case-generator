@@ -8,13 +8,14 @@ def _check_var(v, val, context, errors, prefix=""):
         errors.append(f"Missing value for '{name}'")
         return
 
-    lo = _resolve_bound(v.min_value, context)
-    hi = _resolve_bound(v.max_value, context)
+    lo = _resolve_bound(getattr(v, "min_value", None), context)
+    hi = _resolve_bound(getattr(v, "max_value", None), context)
 
     if isinstance(v, Graph):
         edges = val
-        n = context.get(f"{v.name}_n", lo)
-        for idx, (a, b) in enumerate(edges):
+        n = context.get(f"{v.name}_n", _resolve_bound(v.num_vertices, context))
+        for idx, edge in enumerate(edges):
+            a, b = edge[0], edge[1]
             if a < 1 or a > n:
                 errors.append(f"{prefix}Graph edge {idx}: vertex {a} out of range [1, {n}]")
             if b < 1 or b > n:
@@ -23,10 +24,11 @@ def _check_var(v, val, context, errors, prefix=""):
                 errors.append(f"{prefix}Graph edge {idx}: self-loop at {a}")
     elif isinstance(v, Tree):
         edges = val
-        n = context.get(f"{v.name}_n", lo)
+        n = context.get(f"{v.name}_n", _resolve_bound(v.num_vertices, context))
         if len(edges) != n - 1 and n > 1:
             errors.append(f"{prefix}Tree: expected {n - 1} edges, got {len(edges)}")
-        for idx, (a, b) in enumerate(edges):
+        for idx, edge in enumerate(edges):
+            a, b = edge[0], edge[1]
             if a < 1 or a > n:
                 errors.append(f"{prefix}Tree edge {idx}: vertex {a} out of range [1, {n}]")
             if b < 1 or b > n:

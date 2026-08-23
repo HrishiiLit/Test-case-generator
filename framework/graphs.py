@@ -7,6 +7,8 @@ def _resolve_bound(bound, context):
     if callable(bound):
         return bound(context)
     if hasattr(bound, "resolve"):
+        if bound.name in context:
+            return int(context[bound.name])
         return bound.resolve(_random.Random(0), context)
     return int(bound)
 
@@ -54,7 +56,11 @@ class Graph:
             if not self.allow_multi_edges and key in seen:
                 continue
             seen.add(key)
-            edges.append((u, v))
+            if self.weighted:
+                weight = rng.randint(self.weight_min, self.weight_max)
+                edges.append((u, v, weight))
+            else:
+                edges.append((u, v))
         if len(edges) < m:
             raise ValueError(f"Could not generate {m} edges for {n} vertices")
         return edges
@@ -63,8 +69,8 @@ class Graph:
         return f"{n} {m}"
 
     def render_edge(self, edge):
-        if self.weighted:
-            return f"{edge[0]} {edge[1]}"
+        if self.weighted and len(edge) > 2:
+            return f"{edge[0]} {edge[1]} {edge[2]}"
         return f"{edge[0]} {edge[1]}"
 
     def fixed(self, value):
@@ -96,13 +102,19 @@ class Tree:
         edges = []
         for i in range(2, n + 1):
             parent = rng.randint(1, i - 1)
-            edges.append((parent, i))
+            if self.weighted:
+                weight = rng.randint(self.weight_min, self.weight_max)
+                edges.append((parent, i, weight))
+            else:
+                edges.append((parent, i))
         return edges
 
     def render_header(self, n):
         return str(n)
 
     def render_edge(self, edge):
+        if self.weighted and len(edge) > 2:
+            return f"{edge[0]} {edge[1]} {edge[2]}"
         return f"{edge[0]} {edge[1]}"
 
     def fixed(self, value):

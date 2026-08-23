@@ -1,4 +1,12 @@
 # Testcase Generator Framework
+## Getting Started
+
+```bash
+git clone https://github.com/yourusername/testcase-generator.git
+cd testcase-generator
+```
+
+Ensure you have Python 3.10+ and a C++17 compiler (g++) installed.
 
 A lightweight, folder-driven framework for generating competitive-programming testcases, inspired by [TCFrame](https://tcframe.toki.id/docs).
 

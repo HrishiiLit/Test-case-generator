@@ -3,6 +3,7 @@ contests/
 
 # Python
 __pycache__/
+framework/__pycache__/
 *.pyc
 *.pyo
 

@@ -1,0 +1,16 @@
+# User contest data (testcases, solutions, generated files)
+contests/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Compiled binaries
+*.exe
+*.out
+*.o
+
+# Generated testcases and zips
+**/testcases/
+**/*.zip

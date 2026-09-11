@@ -3,6 +3,7 @@ import argparse
 import importlib.util
 import logging
 import random
+import shutil
 import sys
 from pathlib import Path
 
@@ -75,6 +76,31 @@ def normalize_input(text):
     return text
 
 
+def write_testcase(spec, values, tc_dir, prefix, idx, exe_path, timeout, no_solve):
+    """Write input and optionally output for a single testcase."""
+    input_text = normalize_input(spec.render_testcase(values))
+    input_file = tc_dir / f"{prefix}_input{idx}.txt"
+    with open(input_file, "w", newline="\n") as f:
+        f.write(input_text)
+
+    if no_solve or exe_path is None:
+        return
+
+    try:
+        stdout = run_cpp(exe_path, input_file, timeout=timeout)
+        output_text = normalize_output(stdout)
+    except Exception as e:
+        if prefix == "sample":
+            logger.warning(f"  Sample testcase {idx} solution failed: {e}")
+            output_text = ""
+        else:
+            raise RuntimeError(f"Testcase {idx} solution failed: {e}")
+
+    output_file = tc_dir / f"{prefix}_output{idx}.txt"
+    with open(output_file, "w", newline="\n") as f:
+        f.write(output_text)
+
+
 def process_problem(prob_dir, seed, timeout, no_solve, keep):
     pid = prob_dir.name
     logger.info(f"Processing: {pid}")
@@ -86,7 +112,6 @@ def process_problem(prob_dir, seed, timeout, no_solve, keep):
 
     tc_dir = prob_dir / "testcases"
     if tc_dir.exists():
-        import shutil
         shutil.rmtree(tc_dir)
     tc_dir.mkdir(parents=True, exist_ok=True)
 
@@ -95,7 +120,18 @@ def process_problem(prob_dir, seed, timeout, no_solve, keep):
         exe_path = compile_cpp(prob_dir / "solution.cpp", work_dir=prob_dir)
 
     rng = random.Random(seed)
-    cases = spec.generate_testcases(rng, max_retries=MAX_RETRIES)
+
+    sample_rng = random.Random(seed + 9999)
+    sample_cases = spec.generate_sample_testcases(sample_rng, count=3, max_lines=15)
+    logger.info(f"  Generating {len(sample_cases)} sample testcases")
+
+    sample_sigs = set(spec._case_signature(v) for v in sample_cases)
+
+    for i, values in enumerate(sample_cases, 1):
+        logger.info(f"  Generating sample testcase {i}/{len(sample_cases)}")
+        write_testcase(spec, values, tc_dir, "sample", i, exe_path, timeout, no_solve)
+
+    cases = spec.generate_testcases(rng, max_retries=MAX_RETRIES, external_seen=sample_sigs)
 
     for i, values in enumerate(cases, 1):
         logger.info(f"  Generating testcase {i}/{len(cases)}")
@@ -104,38 +140,16 @@ def process_problem(prob_dir, seed, timeout, no_solve, keep):
         if errors:
             raise RuntimeError(f"Testcase {i} validation failed:\n" + "\n".join(f"  - {e}" for e in errors))
 
-        input_text = normalize_input(spec.render_testcase(values))
-        input_file = tc_dir / f"input{i}.txt"
-        with open(input_file, "w", newline="\n") as f:
-            f.write(input_text)
-
-        if not no_solve and exe_path is not None:
-            logger.info(f"  Running solution on testcase {i}")
-            try:
-                stdout = run_cpp(exe_path, input_file, timeout=timeout)
-                output_text = normalize_output(stdout)
-            except Exception as e:
-                raise RuntimeError(f"Testcase {i} solution failed: {e}")
-
-            output_file = tc_dir / f"output{i}.txt"
-            with open(output_file, "w", newline="\n") as f:
-                f.write(output_text)
+        write_testcase(spec, values, tc_dir, "", i, exe_path, timeout, no_solve)
 
     if exe_path is not None and not keep:
         cleanup_exe(exe_path)
 
     if not no_solve:
-        for i in range(1, len(cases) + 1):
-            inp = tc_dir / f"input{i}.txt"
-            out = tc_dir / f"output{i}.txt"
-            if not inp.exists():
-                raise RuntimeError(f"Missing {inp.name}")
-            if not out.exists():
-                raise RuntimeError(f"Missing {out.name}")
-            if inp.stat().st_size == 0:
-                raise RuntimeError(f"{inp.name} is empty")
-            if out.stat().st_size == 0:
-                raise RuntimeError(f"{out.name} is empty")
+        all_files = list(tc_dir.glob("*.txt"))
+        for f in all_files:
+            if f.stat().st_size == 0:
+                raise RuntimeError(f"{f.name} is empty")
 
         zip_path = prob_dir / f"{pid}.zip"
         create_problem_zip(tc_dir, zip_path, pid)
@@ -184,7 +198,7 @@ def main():
     parser.add_argument("contest", help="Contest folder name (e.g., Contest_1)")
     parser.add_argument("--problem", default=None, help="Process only this problem folder")
     parser.add_argument("--seed", type=int, default=12345, help="Random seed (default: 12345)")
-    parser.add_argument("--timeout", type=int, default=5, help="Solution timeout in seconds (default: 5)")
+    parser.add_argument("--timeout", type=int, default=30, help="Solution timeout in seconds (default: 30)")
     parser.add_argument("--dry-run", action="store_true", help="Show problem summary without generating")
     parser.add_argument("--no-solve", action="store_true", help="Generate inputs only, skip solution execution")
     parser.add_argument("--keep", action="store_true", help="Keep compiled executables")

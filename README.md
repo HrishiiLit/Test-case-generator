@@ -10,7 +10,7 @@ Requires Python 3.10+ and g++ (C++17).
 1. Create contest folder:    contests/MyContest/
 2. Create problem folder:    contests/MyContest/Problem_1/
 3. Add solution:             contests/MyContest/Problem_1/solution.cpp
-4. Generate spec:            Give PROMPT.md + problem statement + solution.cpp to an LLM
+4. Generate spec:            Give PROMPT.md + problem screenshot/description + solution.cpp to an LLM
 5. Add spec:                 contests/MyContest/Problem_1/spec.py
 6. Generate:                 python generate_tests.py contests/MyContest
 7. Upload ZIP:               contests/MyContest/Problem_1/Problem_1.zip → HackerRank
@@ -21,8 +21,8 @@ Requires Python 3.10+ and g++ (C++17).
 ```
 testcase-generator/
 ├── generate_tests.py      # Main CLI
-├── PROMPT.md              # LLM prompt for generating spec.py
-├── FRAMEWORK_PROMPT.md    # Quick API reference
+├── PROMPT.md              # LLM prompt for generating spec.py (self-contained)
+├── FRAMEWORK_PROMPT.md    # Quick API reference (optional, for human reference)
 ├── framework/             # Core library
 │   ├── __init__.py
 │   ├── problem.py
@@ -105,7 +105,7 @@ spec.add_custom_case(my_special_case)
 ## How It Works
 
 1. You create folders and add `solution.cpp`
-2. You get `spec.py` from an LLM using `PROMPT.md`
+2. You get `spec.py` from an LLM using `PROMPT.md` (provide problem screenshot or description + solution.cpp)
 3. The framework generates testcases, validates them, runs your solution, and creates ZIPs
 
 The `solution.cpp` is the oracle — it produces expected outputs. The framework never computes answers itself.

@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testcase Generator | Competitive Programming Test Framework</title>
+    <meta name="description" content="Folder-driven testcase generation for competitive programming. Deterministic, extensible, LLM-powered.">
+    <meta property="og:title" content="Testcase Generator">
+    <meta property="og:description" content="Folder-driven testcase generation for competitive programming">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#059669">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@phosphor-icons/web@2.0.3"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #fafafa;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f4f4f5;
+            --text-primary: #18181b;
+            --text-secondary: #71717a;
+            --text-tertiary: #a1a1aa;
+            --accent: #059669;
+            --accent-hover: #047857;
+            --accent-light: #d1fae5;
+            --border: #e4e4e7;
+            --border-light: #f4f4f5;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 20px 40px -15px rgba(0,0,0,0.08);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+            --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--accent);
+            color: white;
+            padding: 8px 16px;
+            z-index: 100;
+            transition: top 0.3s;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(250, 250, 250, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            z-index: 50;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav-logo {
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-logo i {
+            color: var(--accent);
+            font-size: 1.25rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-links a:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+
+        .nav-mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        main {
+            padding-top: 4rem;
+        }
+
+        .hero {
+            min-height: calc(100dvh - 4rem);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            padding: 4rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: center;
+        }
+
+        .hero-content {
+            padding-right: 2rem;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--accent-light);
+            color: var(--accent);
+            padding: 0.375rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.025em;
+        }
+
+        .hero-badge i {
+            font-size: 0.875rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .hero p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 50ch;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn:active {
+            transform: scale(0.98) translateY(-1px);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--text-tertiary);
+        }
+
+        .btn:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .hero-terminal {
+            background: var(--text-primary);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1rem;
+            background: #27272a;
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot:nth-child(1) { background: #ef4444; }
+        .terminal-dot:nth-child(2) { background: #eab308; }
+        .terminal-dot:nth-child(3) { background: #22c55e; }
+
+        .terminal-title {
+            margin-left: 0.5rem;
+            color: var(--text-tertiary);
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+        }
+
+        .terminal-body {
+            padding: 1.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            line-height: 1.8;
+            color: #a1a1aa;
+            min-height: 200px;
+        }
+
+        .terminal-line {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .terminal-prompt {
+            color: var(--accent);
+        }
+
+        .terminal-command {
+            color: #e4e4e7;
+        }
+
+        .terminal-output {
+            color: #71717a;
+            padding-left: 1.25rem;
+        }
+
+        .terminal-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1.1em;
+            background: var(--accent);
+            animation: blink 1s step-end infinite;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .section {
+            padding: 6rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            margin-bottom: 3rem;
+        }
+
+        .section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.75rem;
+        }
+
+        .section-label i {
+            font-size: 1rem;
+        }
+
+        .section-title {
+            font-size: clamp(1.75rem, 3vw, 2.25rem);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 1.2;
+            color: var(--text-primary);
+        }
+
+        .section-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 55ch;
+            margin-top: 0.75rem;
+            line-height: 1.7;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .overview-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        .overview-content p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+
+        .overview-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .stat-item {
+            text-align: left;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            letter-spacing: -0.02em;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+            margin-top: 0.25rem;
+        }
+
+        .overview-visual {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .code-block {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-filename {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .code-copy {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.375rem;
+            color: var(--text-tertiary);
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .code-copy:hover {
+            color: var(--text-primary);
+        }
+
+        .code-copy:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+
+        .code-content {
+            padding: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.8125rem;
+            line-height: 1.7;
+            overflow-x: auto;
+            color: var(--text-primary);
+        }
+
+        .code-content .keyword { color: #7c3aed; }
+        .code-content .string { color: #059669; }
+        .code-content .comment { color: var(--text-tertiary); }
+        .code-content .function { color: #2563eb; }
+
+        .features-masonry {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--accent-light);
+        }
+
+        .feature-card-large {
+            grid-row: span 2;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-light);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .feature-icon i {
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+
+        .feature-card h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        .tech-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .tech-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .tech-item i {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .tech-item h4 {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .tech-item p {
+            font-size: 0.8125rem;
+            color: var(--text-tertiary);
+        }
+
+        .roadmap {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .roadmap::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .roadmap-item {
+            position: relative;
+            padding-bottom: 3rem;
+        }
+
+        .roadmap-item:last-child {
+            padding-bottom: 0;
+        }
+
+        .roadmap-dot {
+            position: absolute;
+            left: -2rem;
+            top: 0.375rem;
+            width: 12px;
+            height: 12px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            transform: translateX(-5px);
+        }
+
+        .roadmap-item.completed .roadmap-dot {
+            background: var(--accent);
+        }
+
+        .roadmap-phase {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .roadmap-item h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.5rem;
+        }
+
+        .roadmap-item p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        .run-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .run-steps {
+            counter-reset: step;
+        }
+
+        .run-step {
+            counter-increment: step;
+            position: relative;
+            padding-left: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .run-step::before {
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 2rem;
+            height: 2rem;
+            background: var(--accent-light);
+            color: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+
+        .run-step h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .run-step p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .run-code {
+            background: var(--text-primary);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .run-code .terminal-header {
+            background: #27272a;
+        }
+
+        .run-code .terminal-body {
+            font-size: 0.8125rem;
+        }
+
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-text {
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-links a {
+            color: var(--text-tertiary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-links a:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.4s; }
+
+        @media (max-width: 1024px) {
+            .hero {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+                padding: 3rem 1.5rem;
+            }
+
+            .hero-content {
+                padding-right: 0;
+                text-align: left;
+            }
+
+            .overview-grid {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .features-masonry {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-card-large {
+                grid-row: span 1;
+            }
+
+            .tech-stack {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .run-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                padding: 1rem;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--bg-secondary);
+                border-bottom: 1px solid var(--border);
+                flex-direction: column;
+                padding: 1rem;
+                gap: 0;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-links li {
+                border-bottom: 1px solid var(--border-light);
+            }
+
+            .nav-links li:last-child {
+                border-bottom: none;
+            }
+
+            .nav-links a {
+                display: block;
+                padding: 0.75rem 0;
+            }
+
+            .nav-mobile-toggle {
+                display: block;
+            }
+
+            .hero {
+                min-height: auto;
+                padding: 2rem 1rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .section {
+                padding: 3rem 1rem;
+            }
+
+            .overview-stats {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .tech-stack {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 1.5rem;
+                text-align: center;
+            }
+
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .reveal {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <nav role="navigation" aria-label="Main navigation">
+        <a href="#" class="nav-logo" aria-label="Testcase Generator Home">
+            <i class="ph ph-terminal-window"></i>
+            testcase-gen
+        </a>
+        <button class="nav-mobile-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+            <i class="ph ph-list" style="font-size: 1.5rem;"></i>
+        </button>
+        <ul class="nav-links" role="menubar">
+            <li role="none"><a href="#overview" role="menuitem">Overview</a></li>
+            <li role="none"><a href="#features" role="menuitem">Features</a></li>
+            <li role="none"><a href="#tech" role="menuitem">Tech Stack</a></li>
+            <li role="none"><a href="#roadmap" role="menuitem">Roadmap</a></li>
+            <li role="none"><a href="#run" role="menuitem">Quick Start</a></li>
+        </ul>
+    </nav>
+
+    <main id="main">
+        <section class="hero" aria-labelledby="hero-title">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="ph ph-sparkle"></i>
+                    Open Source Tool
+                </div>
+                <h1 id="hero-title">Competitive programming test generation, simplified.</h1>
+                <p>A folder-driven framework for generating deterministic testcases. No JSON config — just folders, solutions, and spec files. Works with C++17 and Python 3.10+.</p>
+                <div class="hero-actions">
+                    <a href="https://github.com/HrishiiLit/Test-case-generator" class="btn btn-primary" target="_blank" rel="noopener">
+                        <i class="ph ph-github-logo"></i>
+                        View Source
+                    </a>
+                    <a href="#run" class="btn btn-secondary">
+                        <i class="ph ph-play-circle"></i>
+                        Quick Start
+                    </a>
+                </div>
+            </div>
+            <div class="hero-terminal" role="img" aria-label="Terminal showing testcase generator command">
+                <div class="terminal-header">
+                    <span class="terminal-dot"></span>
+                    <span class="terminal-dot"></span>
+                    <span class="terminal-dot"></span>
+                    <span class="terminal-title">terminal</span>
+                </div>
+                <div class="terminal-body">
+                    <div class="terminal-line">
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command" id="terminal-cmd"></span>
+                        <span class="terminal-cursor"></span>
+                    </div>
+                    <div class="terminal-output" id="terminal-output" style="display: none;">
+                        <div>Contest: MyContest</div>
+                        <div>Problems: 3</div>
+                        <div>Seed: 12345</div>
+                        <div style="margin-top: 0.5rem;">Processing: Problem_1</div>
+                        <div>  Name: Two Sum</div>
+                        <div>  Testcases: 30</div>
+                        <div style="color: #22c55e; margin-top: 0.5rem;">Generation complete</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="overview" class="section" aria-labelledby="overview-title">
+            <div class="overview-grid">
+                <div class="overview-content reveal">
+                    <div class="section-label">
+                        <i class="ph ph-info"></i>
+                        Overview
+                    </div>
+                    <h2 id="overview-title" class="section-title">Built for competitive programmers who value simplicity</h2>
+                    <p>Testcase Generator eliminates the friction of creating test cases for competitive programming contests. Instead of wrestling with JSON configs or manual file creation, you define your problems in a natural folder structure.</p>
+                    <p>The framework handles generation, validation, solution execution, and packaging — all deterministically reproducible with a single seed value.</p>
+                    <div class="overview-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">9</div>
+                            <div class="stat-label">Data types supported</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">21+</div>
+                            <div class="stat-label">Built-in strategies</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">100%</div>
+                            <div class="stat-label">Deterministic output</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="overview-visual reveal reveal-delay-2">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-filename">spec.py</span>
+                            <button class="code-copy" aria-label="Copy code to clipboard" data-code="spec">
+                                <i class="ph ph-copy"></i>
+                            </button>
+                        </div>
+                        <pre class="code-content"><span class="keyword">from</span> framework <span class="keyword">import</span> *
+
+spec = Problem(name=<span class="string">"Two Sum"</span>, testcases=<span class="string">30</span>)
+
+N = Integer(name=<span class="string">"N"</span>, min_value=<span class="string">2</span>, max_value=<span class="string">100000</span>)
+Target = Integer(name=<span class="string">"Target"</span>, min_value=<span class="string">1</span>, max_value=<span class="string">10**9</span>)
+A = Array(name=<span class="string">"A"</span>, size=N, min_value=<span class="string">-10**9</span>, max_value=<span class="string">10**9</span>)
+
+spec.input(N, Target, A)
+
+spec.add_testcases(
+    minimum(),
+    maximum(),
+    random_case(),
+    stress_case(),
+    increasing(),
+    decreasing(),
+    boundary_values(),
+)</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="section" aria-labelledby="features-title">
+            <div class="section-header reveal">
+                <div class="section-label">
+                    <i class="ph ph-puzzle-piece"></i>
+                    Features
+                </div>
+                <h2 id="features-title" class="section-title">Everything you need, nothing you don't</h2>
+                <p class="section-subtitle">A focused toolkit designed to solve one problem well: generating reliable testcases for competitive programming.</p>
+            </div>
+            <div class="features-masonry">
+                <div class="feature-card feature-card-large reveal reveal-delay-1">
+                    <div class="feature-icon">
+                        <i class="ph ph-folder-open"></i>
+                    </div>
+                    <h3>Folder-Driven Structure</h3>
+                    <p>Your contest organization IS your configuration. Create folders for contests and problems, add a solution.cpp, and you're ready to generate. No YAML, no JSON, no XML — just a natural directory hierarchy that mirrors how you think about problems.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-2">
+                    <div class="feature-icon">
+                        <i class="ph ph-robot"></i>
+                    </div>
+                    <h3>LLM-Powered Specs</h3>
+                    <p>Provide a problem screenshot or description along with solution.cpp to your LLM using PROMPT.md. Get a complete spec.py generated automatically — no manual spec writing needed.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-3">
+                    <div class="feature-icon">
+                        <i class="ph ph-fingerprint"></i>
+                    </div>
+                    <h3>Deterministic Output</h3>
+                    <p>Same spec + same seed = identical testcases, every time. Reproduce results, debug issues, and verify correctness with confidence.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-1">
+                    <div class="feature-icon">
+                        <i class="ph ph-strategy"></i>
+                    </div>
+                    <h3>Rich Strategy Library</h3>
+                    <p>21+ built-in strategies for scalars, strings, graphs, and trees. From minimum/maximum edge cases to complex graph topologies like chains, stars, and balanced trees.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-2">
+                    <div class="feature-icon">
+                        <i class="ph ph-code-block"></i>
+                    </div>
+                    <h3>Custom Test Cases</h3>
+                    <p>Define your own test generators when built-in strategies aren't enough. Write a simple function, and the framework integrates it seamlessly into your test suite.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-3">
+                    <div class="feature-icon">
+                        <i class="ph ph-package"></i>
+                    </div>
+                    <h3>Automatic Packaging</h3>
+                    <p>Generates ready-to-upload ZIP files for HackerRank and similar platforms. Input/output pairs are verified and packaged automatically.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="tech" class="section" aria-labelledby="tech-title">
+            <div class="section-header reveal">
+                <div class="section-label">
+                    <i class="ph ph-stack"></i>
+                    Tech Stack
+                </div>
+                <h2 id="tech-title" class="section-title">Minimal dependencies, maximum reliability</h2>
+                <p class="section-subtitle">Built on a small set of proven technologies that stay out of your way.</p>
+            </div>
+            <div class="tech-stack">
+                <div class="tech-item reveal reveal-delay-1">
+                    <i class="ph ph-file-code"></i>
+                    <h4>Python 3.10+</h4>
+                    <p>Core framework and CLI</p>
+                </div>
+                <div class="tech-item reveal reveal-delay-2">
+                    <i class="ph ph-file-cpp"></i>
+                    <h4>C++17</h4>
+                    <p>Solution execution via g++</p>
+                </div>
+                <div class="tech-item reveal reveal-delay-3">
+                    <i class="ph ph-brain"></i>
+                    <h4>LLM Integration</h4>
+                    <p>Spec generation from prompts</p>
+                </div>
+                <div class="tech-item reveal reveal-delay-4">
+                    <i class="ph ph-terminal-window"></i>
+                    <h4>CLI Interface</h4>
+                    <p>Full-featured command line</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="roadmap" class="section" aria-labelledby="roadmap-title">
+            <div class="section-header reveal">
+                <div class="section-label">
+                    <i class="ph ph-map-trail"></i>
+                    Roadmap
+                </div>
+                <h2 id="roadmap-title" class="section-title">Where we're headed</h2>
+                <p class="section-subtitle">A phased approach to building a complete test generation ecosystem.</p>
+            </div>
+            <div class="roadmap reveal">
+                <div class="roadmap-item completed">
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-phase">Phase 1 - Complete</div>
+                    <h3>Core Framework</h3>
+                    <p>Problem class, generators, validators, and the CLI. The foundation that everything else builds on.</p>
+                </div>
+                <div class="roadmap-item completed">
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-phase">Phase 2 - Complete</div>
+                    <h3>LLM Integration</h3>
+                    <p>PROMPT.md for spec generation. Bridge the gap between problem statements and structured test definitions.</p>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-phase">Phase 3 - In Progress</div>
+                    <h3>Advanced Strategies</h3>
+                    <p>Expanded graph and tree strategies. More complex topologies and edge case generators for challenging problems.</p>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-phase">Phase 4 - Planned</div>
+                    <h3>Web Interface</h3>
+                    <p>A browser-based UI for visualizing testcases, debugging generation, and managing contests without the terminal.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="run" class="section" aria-labelledby="run-title">
+            <div class="section-header reveal">
+                <div class="section-label">
+                    <i class="ph ph-play"></i>
+                    Quick Start
+                </div>
+                <h2 id="run-title" class="section-title">Up and running in minutes</h2>
+                <p class="section-subtitle">Follow these steps to generate your first testcases.</p>
+            </div>
+            <div class="run-section">
+                <div class="run-steps reveal">
+                    <div class="run-step">
+                        <h4>Clone the repository</h4>
+                        <p>Get the framework on your local machine.</p>
+                    </div>
+                    <div class="run-step">
+                        <h4>Create a contest folder</h4>
+                        <p>Organize your problems under a contest directory.</p>
+                    </div>
+                    <div class="run-step">
+                        <h4>Add your solution</h4>
+                        <p>Place solution.cpp in the problem folder.</p>
+                    </div>
+                    <div class="run-step">
+                        <h4>Generate spec.py</h4>
+                        <p>Provide the problem screenshot or description + solution.cpp to your LLM with PROMPT.md.</p>
+                    </div>
+                    <div class="run-step">
+                        <h4>Run the generator</h4>
+                        <p>Execute the CLI and watch testcases appear.</p>
+                    </div>
+                </div>
+                <div class="run-code reveal reveal-delay-2">
+                    <div class="terminal-header">
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-dot"></span>
+                        <span class="terminal-title">terminal</span>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">$</span>
+                            <span class="terminal-command">git clone https://github.com/user/testcase-generator</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">$</span>
+                            <span class="terminal-command">cd testcase-generator</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">$</span>
+                            <span class="terminal-command">mkdir -p contests/MyContest/Problem_1</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">$</span>
+                            <span class="terminal-command">cp solution.cpp contests/MyContest/Problem_1/</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">$</span>
+                            <span class="terminal-command">python generate_tests.py contests/MyContest</span>
+                        </div>
+                        <div class="terminal-output" style="margin-top: 0.5rem;">
+                            <div style="color: #22c55e;">Generation complete</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer" role="contentinfo">
+        <div class="footer-content">
+            <p class="footer-text">Testcase Generator - Built for competitive programmers</p>
+            <div class="footer-links">
+                <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+                <a href="#overview">Documentation</a>
+                <a href="#roadmap">Roadmap</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileToggle = document.querySelector('.nav-mobile-toggle');
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (mobileToggle && navLinks) {
+                mobileToggle.addEventListener('click', function() {
+                    const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                    this.setAttribute('aria-expanded', !isExpanded);
+                    navLinks.classList.toggle('active');
+                    
+                    const icon = this.querySelector('i');
+                    if (navLinks.classList.contains('active')) {
+                        icon.className = 'ph ph-x';
+                    } else {
+                        icon.className = 'ph ph-list';
+                    }
+                });
+
+                navLinks.querySelectorAll('a').forEach(function(link) {
+                    link.addEventListener('click', function() {
+                        navLinks.classList.remove('active');
+                        mobileToggle.setAttribute('aria-expanded', 'false');
+                        mobileToggle.querySelector('i').className = 'ph ph-list';
+                    });
+                });
+            }
+
+            const terminalCmd = document.getElementById('terminal-cmd');
+            const terminalOutput = document.getElementById('terminal-output');
+            const command = 'python generate_tests.py contests/MyContest';
+            let charIndex = 0;
+
+            function typeCommand() {
+                if (charIndex < command.length) {
+                    terminalCmd.textContent += command.charAt(charIndex);
+                    charIndex++;
+                    setTimeout(typeCommand, 50 + Math.random() * 30);
+                } else {
+                    setTimeout(function() {
+                        terminalOutput.style.display = 'block';
+                    }, 500);
+                }
+            }
+
+            setTimeout(typeCommand, 1000);
+
+            const revealElements = document.querySelectorAll('.reveal');
+
+            function checkReveal() {
+                const windowHeight = window.innerHeight;
+                
+                revealElements.forEach(function(element) {
+                    const elementTop = element.getBoundingClientRect().top;
+                    const revealPoint = windowHeight - 100;
+                    
+                    if (elementTop < revealPoint) {
+                        element.classList.add('visible');
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', checkReveal);
+            checkReveal();
+
+            const copyButtons = document.querySelectorAll('.code-copy');
+            
+            copyButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const codeContent = this.closest('.code-block').querySelector('.code-content');
+                    const text = codeContent.textContent;
+                    
+                    navigator.clipboard.writeText(text).then(function() {
+                        const icon = button.querySelector('i');
+                        icon.className = 'ph ph-check';
+                        button.setAttribute('aria-label', 'Copied!');
+                        
+                        setTimeout(function() {
+                            icon.className = 'ph ph-copy';
+                            button.setAttribute('aria-label', 'Copy code to clipboard');
+                        }, 2000);
+                    });
+                });
+            });
+
+            document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

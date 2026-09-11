@@ -1,5 +1,6 @@
 import random as _random
 from framework.graphs import Graph, Tree
+from framework.generators import resolve_bound
 
 
 class _SyncDict(dict):
@@ -23,18 +24,6 @@ class _SyncDict(dict):
         self._context.update(self)
 
 
-def _resolve_bound(bound, context):
-    if bound is None:
-        return 0
-    if callable(bound):
-        return bound(context)
-    if hasattr(bound, "resolve"):
-        if bound.name in context:
-            return int(context[bound.name])
-        return bound.resolve(_random.Random(0), context)
-    return int(bound)
-
-
 def _has_explicit_size(v):
     sized = getattr(v, "size", None) is not None
     ranged = (
@@ -46,17 +35,17 @@ def _has_explicit_size(v):
 
 def _make_scalar(v, val, context, rng):
     if isinstance(v, Graph):
-        n = _resolve_bound(v.num_vertices, context)
+        n = resolve_bound(v.num_vertices, context)
         edges = []
         return {v.name: edges, f"{v.name}_n": n, f"{v.name}_m": 0}
     if isinstance(v, Tree):
-        n = _resolve_bound(v.num_vertices, context)
+        n = resolve_bound(v.num_vertices, context)
         return {v.name: [], f"{v.name}_n": n}
     if hasattr(v, "_resolve_size"):
         n = v._resolve_size(rng, context)
         return {v.name: [val] * n}
     if hasattr(v, "alphabet"):
-        n = _resolve_bound(v.length, context) if v.length else 5
+        n = resolve_bound(v.length, context) if v.length else 5
         return {v.name: v.alphabet[0] * n if v.alphabet else "a" * n}
     return {v.name: val}
 
@@ -65,7 +54,7 @@ def minimum():
     def strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            lo = _resolve_bound(v.min_value, context)
+            lo = resolve_bound(v.min_value, context)
             result.update(_make_scalar(v, lo, context, rng))
         return result
     return strategy
@@ -75,11 +64,11 @@ def maximum():
     def strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            hi = _resolve_bound(v.max_value, context)
+            hi = resolve_bound(v.max_value, context)
             if isinstance(v, Graph):
-                n = _resolve_bound(v.num_vertices, context)
+                n = resolve_bound(v.num_vertices, context)
                 max_edges = n * (n - 1) // 2
-                m = min(_resolve_bound(v.num_edges, context), max_edges) if v.num_edges else max_edges
+                m = min(resolve_bound(v.num_edges, context), max_edges) if v.num_edges else max_edges
                 edges = []
                 seen = set()
                 for i in range(1, n + 1):
@@ -93,7 +82,7 @@ def maximum():
                 result[f"{v.name}_n"] = n
                 result[f"{v.name}_m"] = len(edges)
             elif isinstance(v, Tree):
-                n = _resolve_bound(v.num_vertices, context)
+                n = resolve_bound(v.num_vertices, context)
                 edges = [(1, i) for i in range(2, n + 1)]
                 result[v.name] = edges
                 result[f"{v.name}_n"] = n
@@ -101,7 +90,7 @@ def maximum():
                 n = v._resolve_size(rng, context)
                 result[v.name] = [hi] * n
             elif hasattr(v, "alphabet"):
-                n = _resolve_bound(v.length, context) if v.length else 20
+                n = resolve_bound(v.length, context) if v.length else 20
                 result[v.name] = (v.alphabet[-1] if v.alphabet else "z") * n
             else:
                 result[v.name] = hi
@@ -114,14 +103,14 @@ def random_case():
         result = _SyncDict(context)
         for v in spec._variables:
             if isinstance(v, Graph):
-                n = _resolve_bound(v.num_vertices, context)
-                m = _resolve_bound(v.num_edges, context) if v.num_edges else min(n, n * (n - 1) // 4)
+                n = resolve_bound(v.num_vertices, context)
+                m = resolve_bound(v.num_edges, context) if v.num_edges else min(n, n * (n - 1) // 4)
                 edges = v._generate_edges(n, m, rng)
                 result[v.name] = edges
                 result[f"{v.name}_n"] = n
                 result[f"{v.name}_m"] = m
             elif isinstance(v, Tree):
-                n = _resolve_bound(v.num_vertices, context)
+                n = resolve_bound(v.num_vertices, context)
                 edges = v._generate_edges(n, rng)
                 result[v.name] = edges
                 result[f"{v.name}_n"] = n
@@ -135,10 +124,10 @@ def stress_case():
     def strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            hi = _resolve_bound(v.max_value, context)
-            lo = _resolve_bound(v.min_value, context)
+            hi = resolve_bound(v.max_value, context)
+            lo = resolve_bound(v.min_value, context)
             if isinstance(v, Graph):
-                n = _resolve_bound(v.num_vertices, context)
+                n = resolve_bound(v.num_vertices, context)
                 n = max(n, 50)
                 max_edges = n * (n - 1) // 2
                 m = min(max_edges, 200)
@@ -147,7 +136,7 @@ def stress_case():
                 result[f"{v.name}_n"] = n
                 result[f"{v.name}_m"] = m
             elif isinstance(v, Tree):
-                n = _resolve_bound(v.num_vertices, context)
+                n = resolve_bound(v.num_vertices, context)
                 n = max(n, 50)
                 edges = v._generate_edges(n, rng)
                 result[v.name] = edges
@@ -156,10 +145,10 @@ def stress_case():
                 if _has_explicit_size(v):
                     n = v._resolve_size(rng, context)
                 else:
-                    n = max(50, _resolve_bound(v.max_size, context) if hasattr(v, "max_size") and v.max_size else 50)
+                    n = max(50, resolve_bound(v.max_size, context) if hasattr(v, "max_size") and v.max_size else 50)
                 result[v.name] = [rng.randint(lo, hi) for _ in range(n)]
             elif hasattr(v, "alphabet"):
-                n = _resolve_bound(v.length, context) if v.length else 50
+                n = resolve_bound(v.length, context) if v.length else 50
                 result[v.name] = "".join(rng.choice(v.alphabet) for _ in range(n))
             else:
                 result[v.name] = hi
@@ -171,8 +160,8 @@ def all_equal():
     def strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            lo = _resolve_bound(v.min_value, context)
-            hi = _resolve_bound(v.max_value, context)
+            lo = resolve_bound(v.min_value, context)
+            hi = resolve_bound(v.max_value, context)
             val = rng.randint(lo, hi)
             result.update(_make_scalar(v, val, context, rng))
         return result
@@ -183,8 +172,8 @@ def all_zero():
     def strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            lo = _resolve_bound(v.min_value, context)
-            hi = _resolve_bound(v.max_value, context)
+            lo = resolve_bound(v.min_value, context)
+            hi = resolve_bound(v.max_value, context)
             if lo <= 0 <= hi:
                 result.update(_make_scalar(v, 0, context, rng))
             else:
@@ -197,8 +186,8 @@ def increasing():
     def strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            lo = _resolve_bound(v.min_value, context)
-            hi = _resolve_bound(v.max_value, context)
+            lo = resolve_bound(v.min_value, context)
+            hi = resolve_bound(v.max_value, context)
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, lo, context, rng))
             elif hasattr(v, "_resolve_size"):
@@ -215,8 +204,8 @@ def decreasing():
     def strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            lo = _resolve_bound(v.min_value, context)
-            hi = _resolve_bound(v.max_value, context)
+            lo = resolve_bound(v.min_value, context)
+            hi = resolve_bound(v.max_value, context)
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, hi, context, rng))
             elif hasattr(v, "_resolve_size"):
@@ -233,8 +222,8 @@ def mixed_signs():
     def strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            lo = _resolve_bound(v.min_value, context)
-            hi = _resolve_bound(v.max_value, context)
+            lo = resolve_bound(v.min_value, context)
+            hi = resolve_bound(v.max_value, context)
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, lo, context, rng))
             elif hasattr(v, "_resolve_size"):
@@ -258,8 +247,8 @@ def positive_only():
     def strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            lo = max(1, _resolve_bound(v.min_value, context))
-            hi = _resolve_bound(v.max_value, context)
+            lo = max(1, resolve_bound(v.min_value, context))
+            hi = resolve_bound(v.max_value, context)
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, lo, context, rng))
             elif hasattr(v, "_resolve_size"):
@@ -275,8 +264,8 @@ def negative_only():
     def strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            lo = _resolve_bound(v.min_value, context)
-            hi = min(-1, _resolve_bound(v.max_value, context))
+            lo = resolve_bound(v.min_value, context)
+            hi = min(-1, resolve_bound(v.max_value, context))
             if lo > hi:
                 hi = lo
             if isinstance(v, (Graph, Tree)):
@@ -294,8 +283,8 @@ def alternating():
     def strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            lo = _resolve_bound(v.min_value, context)
-            hi = _resolve_bound(v.max_value, context)
+            lo = resolve_bound(v.min_value, context)
+            hi = resolve_bound(v.max_value, context)
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, lo, context, rng))
             elif hasattr(v, "_resolve_size"):
@@ -313,8 +302,8 @@ def boundary_values():
     def strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            lo = _resolve_bound(v.min_value, context)
-            hi = _resolve_bound(v.max_value, context)
+            lo = resolve_bound(v.min_value, context)
+            hi = resolve_bound(v.max_value, context)
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, lo, context, rng))
             elif hasattr(v, "_resolve_size"):
@@ -333,8 +322,8 @@ def duplicates():
     def strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            lo = _resolve_bound(v.min_value, context)
-            hi = _resolve_bound(v.max_value, context)
+            lo = resolve_bound(v.min_value, context)
+            hi = resolve_bound(v.max_value, context)
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, lo, context, rng))
             elif hasattr(v, "_resolve_size"):
@@ -355,15 +344,15 @@ def min_length():
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, 0, context, rng))
             elif hasattr(v, "alphabet"):
-                n = _resolve_bound(v.min_length, context) if v.min_length else 1
+                n = resolve_bound(v.min_length, context) if v.min_length else 1
                 result[v.name] = "".join(rng.choice(v.alphabet) for _ in range(n))
             elif hasattr(v, "_resolve_size"):
                 n = v._resolve_size(rng, context) if _has_explicit_size(v) else 1
-                lo = _resolve_bound(v.min_value, context)
-                hi = _resolve_bound(v.max_value, context)
+                lo = resolve_bound(v.min_value, context)
+                hi = resolve_bound(v.max_value, context)
                 result[v.name] = [rng.randint(lo, hi) for _ in range(n)]
             else:
-                result[v.name] = _resolve_bound(v.min_value, context)
+                result[v.name] = resolve_bound(v.min_value, context)
         return result
     return strategy
 
@@ -375,15 +364,15 @@ def max_length():
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, 0, context, rng))
             elif hasattr(v, "alphabet"):
-                n = _resolve_bound(v.max_length, context) if v.max_length else 100
+                n = resolve_bound(v.max_length, context) if v.max_length else 100
                 result[v.name] = "".join(rng.choice(v.alphabet) for _ in range(n))
             elif hasattr(v, "_resolve_size"):
                 n = v._resolve_size(rng, context) if _has_explicit_size(v) else 100
-                lo = _resolve_bound(v.min_value, context)
-                hi = _resolve_bound(v.max_value, context)
+                lo = resolve_bound(v.min_value, context)
+                hi = resolve_bound(v.max_value, context)
                 result[v.name] = [rng.randint(lo, hi) for _ in range(n)]
             else:
-                result[v.name] = _resolve_bound(v.max_value, context)
+                result[v.name] = resolve_bound(v.max_value, context)
         return result
     return strategy
 
@@ -397,7 +386,7 @@ def single_char():
             elif hasattr(v, "alphabet"):
                 result[v.name] = rng.choice(v.alphabet)
             else:
-                result[v.name] = _resolve_bound(v.min_value, context)
+                result[v.name] = resolve_bound(v.min_value, context)
         return result
     return strategy
 
@@ -410,10 +399,10 @@ def all_same_char():
                 result.update(_make_scalar(v, 0, context, rng))
             elif hasattr(v, "alphabet"):
                 ch = rng.choice(v.alphabet)
-                n = _resolve_bound(v.length, context) if v.length else rng.randint(5, 20)
+                n = resolve_bound(v.length, context) if v.length else rng.randint(5, 20)
                 result[v.name] = ch * n
             else:
-                result[v.name] = _resolve_bound(v.min_value, context)
+                result[v.name] = resolve_bound(v.min_value, context)
         return result
     return strategy
 
@@ -425,11 +414,11 @@ def alternating_chars():
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, 0, context, rng))
             elif hasattr(v, "alphabet"):
-                n = _resolve_bound(v.length, context) if v.length else rng.randint(5, 20)
+                n = resolve_bound(v.length, context) if v.length else rng.randint(5, 20)
                 a, b = rng.sample(v.alphabet, 2) if len(v.alphabet) >= 2 else (v.alphabet[0], v.alphabet[0])
                 result[v.name] = "".join(a if i % 2 == 0 else b for i in range(n))
             else:
-                result[v.name] = _resolve_bound(v.min_value, context)
+                result[v.name] = resolve_bound(v.min_value, context)
         return result
     return strategy
 
@@ -441,13 +430,13 @@ def palindrome():
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, 0, context, rng))
             elif hasattr(v, "alphabet"):
-                n = _resolve_bound(v.length, context) if v.length else rng.randint(5, 20)
+                n = resolve_bound(v.length, context) if v.length else rng.randint(5, 20)
                 half = n // 2
                 left = "".join(rng.choice(v.alphabet) for _ in range(half))
                 mid = rng.choice(v.alphabet) if n % 2 == 1 else ""
                 result[v.name] = left + mid + left[::-1]
             else:
-                result[v.name] = _resolve_bound(v.min_value, context)
+                result[v.name] = resolve_bound(v.min_value, context)
         return result
     return strategy
 
@@ -461,10 +450,10 @@ def repeated_pattern():
             elif hasattr(v, "alphabet"):
                 pat_len = rng.randint(2, 5)
                 pattern = "".join(rng.choice(v.alphabet) for _ in range(pat_len))
-                n = _resolve_bound(v.length, context) if v.length else rng.randint(10, 30)
+                n = resolve_bound(v.length, context) if v.length else rng.randint(10, 30)
                 result[v.name] = (pattern * (n // pat_len + 1))[:n]
             else:
-                result[v.name] = _resolve_bound(v.min_value, context)
+                result[v.name] = resolve_bound(v.min_value, context)
         return result
     return strategy
 
@@ -474,18 +463,18 @@ def chain():
         result = _SyncDict(context)
         for v in spec._variables:
             if isinstance(v, Graph):
-                n = _resolve_bound(v.num_vertices, context)
+                n = resolve_bound(v.num_vertices, context)
                 edges = [(i, i + 1) for i in range(1, n)]
                 result[v.name] = edges
                 result[f"{v.name}_n"] = n
                 result[f"{v.name}_m"] = len(edges)
             elif isinstance(v, Tree):
-                n = _resolve_bound(v.num_vertices, context)
+                n = resolve_bound(v.num_vertices, context)
                 edges = [(i, i + 1) for i in range(1, n)]
                 result[v.name] = edges
                 result[f"{v.name}_n"] = n
             else:
-                result.update(_make_scalar(v, _resolve_bound(v.min_value, context), context, rng))
+                result.update(_make_scalar(v, resolve_bound(v.min_value, context), context, rng))
         return result
     return strategy
 
@@ -495,18 +484,18 @@ def star():
         result = _SyncDict(context)
         for v in spec._variables:
             if isinstance(v, Graph):
-                n = _resolve_bound(v.num_vertices, context)
+                n = resolve_bound(v.num_vertices, context)
                 edges = [(1, i) for i in range(2, n + 1)]
                 result[v.name] = edges
                 result[f"{v.name}_n"] = n
                 result[f"{v.name}_m"] = len(edges)
             elif isinstance(v, Tree):
-                n = _resolve_bound(v.num_vertices, context)
+                n = resolve_bound(v.num_vertices, context)
                 edges = [(1, i) for i in range(2, n + 1)]
                 result[v.name] = edges
                 result[f"{v.name}_n"] = n
             else:
-                result.update(_make_scalar(v, _resolve_bound(v.min_value, context), context, rng))
+                result.update(_make_scalar(v, resolve_bound(v.min_value, context), context, rng))
         return result
     return strategy
 
@@ -516,7 +505,7 @@ def disconnected():
         result = _SyncDict(context)
         for v in spec._variables:
             if isinstance(v, Graph):
-                n = _resolve_bound(v.num_vertices, context)
+                n = resolve_bound(v.num_vertices, context)
                 half = max(2, n // 2)
                 edges = [(i, i + 1) for i in range(1, half)]
                 edges += [(half + i, half + i + 1) for i in range(1, n - half)]
@@ -524,7 +513,7 @@ def disconnected():
                 result[f"{v.name}_n"] = n
                 result[f"{v.name}_m"] = len(edges)
             else:
-                result.update(_make_scalar(v, _resolve_bound(v.min_value, context), context, rng))
+                result.update(_make_scalar(v, resolve_bound(v.min_value, context), context, rng))
         return result
     return strategy
 
@@ -534,7 +523,7 @@ def dense():
         result = _SyncDict(context)
         for v in spec._variables:
             if isinstance(v, Graph):
-                n = _resolve_bound(v.num_vertices, context)
+                n = resolve_bound(v.num_vertices, context)
                 edges = []
                 for i in range(1, n + 1):
                     for j in range(i + 1, n + 1):
@@ -546,7 +535,7 @@ def dense():
                 result[f"{v.name}_n"] = n
                 result[f"{v.name}_m"] = len(edges)
             else:
-                result.update(_make_scalar(v, _resolve_bound(v.min_value, context), context, rng))
+                result.update(_make_scalar(v, resolve_bound(v.min_value, context), context, rng))
         return result
     return strategy
 
@@ -563,7 +552,7 @@ def single_node():
                 result[f"{v.name}_n"] = 1
                 result[f"{v.name}_m"] = 0
             else:
-                result.update(_make_scalar(v, _resolve_bound(v.min_value, context), context, rng))
+                result.update(_make_scalar(v, resolve_bound(v.min_value, context), context, rng))
         return result
     return strategy
 
@@ -573,12 +562,12 @@ def balanced():
         result = _SyncDict(context)
         for v in spec._variables:
             if isinstance(v, Tree):
-                n = _resolve_bound(v.num_vertices, context)
+                n = resolve_bound(v.num_vertices, context)
                 edges = [(i // 2, i) for i in range(2, n + 1)]
                 result[v.name] = edges
                 result[f"{v.name}_n"] = n
             else:
-                result.update(_make_scalar(v, _resolve_bound(v.min_value, context), context, rng))
+                result.update(_make_scalar(v, resolve_bound(v.min_value, context), context, rng))
         return result
     return strategy
 
@@ -588,11 +577,11 @@ def skewed():
         result = _SyncDict(context)
         for v in spec._variables:
             if isinstance(v, Tree):
-                n = _resolve_bound(v.num_vertices, context)
+                n = resolve_bound(v.num_vertices, context)
                 edges = [(i, i + 1) for i in range(1, n)]
                 result[v.name] = edges
                 result[f"{v.name}_n"] = n
             else:
-                result.update(_make_scalar(v, _resolve_bound(v.min_value, context), context, rng))
+                result.update(_make_scalar(v, resolve_bound(v.min_value, context), context, rng))
         return result
     return strategy

@@ -1,4 +1,4 @@
-from framework.generators import _Var
+from framework.generators import _Var, resolve_bound
 from framework.graphs import Graph, Tree
 
 
@@ -8,12 +8,12 @@ def _check_var(v, val, context, errors, prefix=""):
         errors.append(f"Missing value for '{name}'")
         return
 
-    lo = _resolve_bound(getattr(v, "min_value", None), context)
-    hi = _resolve_bound(getattr(v, "max_value", None), context)
+    lo = resolve_bound(getattr(v, "min_value", None), context)
+    hi = resolve_bound(getattr(v, "max_value", None), context)
 
     if isinstance(v, Graph):
         edges = val
-        n = context.get(f"{v.name}_n", _resolve_bound(v.num_vertices, context))
+        n = context.get(f"{v.name}_n", resolve_bound(v.num_vertices, context))
         for idx, edge in enumerate(edges):
             a, b = edge[0], edge[1]
             if a < 1 or a > n:
@@ -24,7 +24,7 @@ def _check_var(v, val, context, errors, prefix=""):
                 errors.append(f"{prefix}Graph edge {idx}: self-loop at {a}")
     elif isinstance(v, Tree):
         edges = val
-        n = context.get(f"{v.name}_n", _resolve_bound(v.num_vertices, context))
+        n = context.get(f"{v.name}_n", resolve_bound(v.num_vertices, context))
         if len(edges) != n - 1 and n > 1:
             errors.append(f"{prefix}Tree: expected {n - 1} edges, got {len(edges)}")
         for idx, edge in enumerate(edges):
@@ -36,7 +36,7 @@ def _check_var(v, val, context, errors, prefix=""):
     elif isinstance(val, list):
         if hasattr(v, "_resolve_size"):
             if getattr(v, "size", None) is not None:
-                expected = _resolve_bound(v.size, context)
+                expected = resolve_bound(v.size, context)
                 if len(val) != expected:
                     errors.append(
                         f"{name}: declared size {expected} but got {len(val)} elements"
@@ -53,11 +53,11 @@ def _check_var(v, val, context, errors, prefix=""):
                 if ch not in v.alphabet:
                     errors.append(f"{name}: char '{ch}' not in alphabet")
         if hasattr(v, "min_length") and v.min_length is not None:
-            min_len = _resolve_bound(v.min_length, context)
+            min_len = resolve_bound(v.min_length, context)
             if len(val) < min_len:
                 errors.append(f"{name}: length {len(val)} < min {min_len}")
         if hasattr(v, "max_length") and v.max_length is not None:
-            max_len = _resolve_bound(v.max_length, context)
+            max_len = resolve_bound(v.max_length, context)
             if len(val) > max_len:
                 errors.append(f"{name}: length {len(val)} > max {max_len}")
     elif isinstance(val, (int, float)):
@@ -105,15 +105,3 @@ def validate_testcase(spec, values):
         _check_var(v, values.get(v.name), values, errors)
 
     return errors
-
-
-def _resolve_bound(bound, context):
-    if bound is None:
-        return 0
-    if callable(bound):
-        return bound(context)
-    if hasattr(bound, "resolve"):
-        if bound.name in context:
-            return int(context[bound.name])
-        return bound.resolve(__import__("random").Random(0), context)
-    return int(bound)

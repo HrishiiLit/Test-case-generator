@@ -1,16 +1,5 @@
 import random as _random
-
-
-def _resolve_bound(bound, context):
-    if bound is None:
-        return 0
-    if callable(bound):
-        return bound(context)
-    if hasattr(bound, "resolve"):
-        if bound.name in context:
-            return int(context[bound.name])
-        return bound.resolve(_random.Random(0), context)
-    return int(bound)
+from framework.generators import resolve_bound
 
 
 class Graph:
@@ -34,8 +23,8 @@ class Graph:
     def resolve(self, rng, context):
         if self._fixed is not None:
             return self._fixed
-        n = _resolve_bound(self.num_vertices, context)
-        m = _resolve_bound(self.num_edges, context)
+        n = resolve_bound(self.num_vertices, context)
+        m = resolve_bound(self.num_edges, context)
         return self._generate_edges(n, m, rng)
 
     def _generate_edges(self, n, m, rng):
@@ -93,7 +82,7 @@ class Tree:
     def resolve(self, rng, context):
         if self._fixed is not None:
             return self._fixed
-        n = _resolve_bound(self.num_vertices, context)
+        n = resolve_bound(self.num_vertices, context)
         return self._generate_edges(n, rng)
 
     def _generate_edges(self, n, rng):

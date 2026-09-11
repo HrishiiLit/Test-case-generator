@@ -1,6 +1,19 @@
 import random as _random
 
 
+def resolve_bound(bound, context):
+    """Resolve a bound value that may be a literal, callable, or _Var reference."""
+    if bound is None:
+        return 0
+    if callable(bound):
+        return bound(context)
+    if hasattr(bound, "resolve"):
+        if bound.name in context:
+            return int(context[bound.name])
+        return bound.resolve(_random.Random(0), context)
+    return int(bound)
+
+
 class Line:
     """Groups multiple variables to be rendered space-separated on a single line."""
 
@@ -63,15 +76,7 @@ class _Var:
         return rng.randint(lo, hi)
 
     def _eval_bound(self, bound, context):
-        if bound is None:
-            return 0
-        if callable(bound):
-            return bound(context)
-        if isinstance(bound, _Var):
-            if bound.name in context:
-                return int(context[bound.name])
-            return bound.resolve(_random.Random(0), context)
-        return int(bound)
+        return resolve_bound(bound, context)
 
     def fixed(self, value):
         self._fixed = value
@@ -128,9 +133,6 @@ class String(_Var):
         else:
             n = rng.randint(1, 20)
         return "".join(rng.choice(self.alphabet) for _ in range(n))
-
-    def render(self, value):
-        return value
 
 
 class Array(_Var):

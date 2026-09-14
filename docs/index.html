@@ -41,17 +41,9 @@
             --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        html {
-            scroll-behavior: smooth;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+        html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
 
         body {
             font-family: var(--font-sans);
@@ -62,831 +54,321 @@
         }
 
         .skip-link {
-            position: absolute;
-            top: -40px;
-            left: 0;
-            background: var(--accent);
-            color: white;
-            padding: 8px 16px;
-            z-index: 100;
-            transition: top 0.3s;
+            position: absolute; top: -40px; left: 0;
+            background: var(--accent); color: white;
+            padding: 8px 16px; z-index: 100; transition: top 0.3s;
         }
-
-        .skip-link:focus {
-            top: 0;
-        }
+        .skip-link:focus { top: 0; }
 
         nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(250, 250, 250, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            z-index: 50;
+            position: fixed; top: 0; left: 0; right: 0;
+            background: rgba(250,250,250,0.85);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border); z-index: 50;
             padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1400px;
-            margin: 0 auto;
+            display: flex; justify-content: space-between; align-items: center;
+            max-width: 1400px; margin: 0 auto;
         }
-
         .nav-logo {
-            font-weight: 700;
-            font-size: 1.125rem;
-            color: var(--text-primary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            font-weight: 700; font-size: 1.125rem;
+            color: var(--text-primary); text-decoration: none;
+            display: flex; align-items: center; gap: 0.5rem;
         }
-
-        .nav-logo i {
-            color: var(--accent);
-            font-size: 1.25rem;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
+        .nav-logo i { color: var(--accent); font-size: 1.25rem; }
+        .nav-links { display: flex; gap: 2rem; list-style: none; flex-wrap: wrap; }
         .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: color 0.2s;
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.875rem; font-weight: 500; transition: color 0.2s;
         }
+        .nav-links a:hover { color: var(--text-primary); }
+        .nav-links a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+        .nav-mobile-toggle { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; color: var(--text-primary); }
 
-        .nav-links a:hover {
-            color: var(--text-primary);
-        }
-
-        .nav-links a:focus-visible {
-            outline: 2px solid var(--accent);
-            outline-offset: 2px;
-            border-radius: 4px;
-        }
-
-        .nav-mobile-toggle {
-            display: none;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0.5rem;
-            color: var(--text-primary);
-        }
-
-        main {
-            padding-top: 4rem;
-        }
+        main { padding-top: 4rem; }
 
         .hero {
             min-height: calc(100dvh - 4rem);
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            padding: 4rem 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-            align-items: center;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+            padding: 4rem 2rem; max-width: 1400px; margin: 0 auto; align-items: center;
         }
-
-        .hero-content {
-            padding-right: 2rem;
-        }
-
+        .hero-content { padding-right: 2rem; }
         .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: var(--accent-light);
-            color: var(--accent);
-            padding: 0.375rem 0.75rem;
-            border-radius: 100px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            letter-spacing: 0.025em;
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: var(--accent-light); color: var(--accent);
+            padding: 0.375rem 0.75rem; border-radius: 100px;
+            font-size: 0.75rem; font-weight: 600; margin-bottom: 1.5rem; letter-spacing: 0.025em;
         }
-
-        .hero-badge i {
-            font-size: 0.875rem;
-        }
-
+        .hero-badge i { font-size: 0.875rem; }
         .hero h1 {
-            font-size: clamp(2.5rem, 5vw, 3.5rem);
-            font-weight: 700;
-            line-height: 1.1;
-            letter-spacing: -0.03em;
-            margin-bottom: 1.25rem;
-            color: var(--text-primary);
+            font-size: clamp(2.5rem, 5vw, 3.5rem); font-weight: 700;
+            line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 1.25rem;
         }
-
-        .hero p {
-            font-size: 1.125rem;
-            color: var(--text-secondary);
-            max-width: 50ch;
-            line-height: 1.7;
-            margin-bottom: 2rem;
-        }
-
-        .hero-actions {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
+        .hero p { font-size: 1.125rem; color: var(--text-secondary); max-width: 50ch; line-height: 1.7; margin-bottom: 2rem; }
+        .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
 
         .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--radius-sm);
-            font-size: 0.875rem;
-            font-weight: 600;
-            text-decoration: none;
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.75rem 1.5rem; border-radius: var(--radius-sm);
+            font-size: 0.875rem; font-weight: 600; text-decoration: none;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            cursor: pointer;
-            border: none;
+            cursor: pointer; border: none;
         }
-
-        .btn:active {
-            transform: scale(0.98) translateY(-1px);
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-hover);
-            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
-        }
-
-        .btn-secondary {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: var(--bg-tertiary);
-            border-color: var(--text-tertiary);
-        }
-
-        .btn:focus-visible {
-            outline: 2px solid var(--accent);
-            outline-offset: 2px;
-        }
+        .btn:active { transform: scale(0.98) translateY(-1px); }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 4px 12px rgba(5,150,105,0.25); }
+        .btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--bg-tertiary); border-color: var(--text-tertiary); }
+        .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
         .hero-terminal {
-            background: var(--text-primary);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
-            position: relative;
+            background: var(--text-primary); border-radius: var(--radius-lg);
+            overflow: hidden; box-shadow: var(--shadow-lg);
         }
-
-        .terminal-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.875rem 1rem;
-            background: #27272a;
-        }
-
-        .terminal-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
+        .terminal-header { display: flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1rem; background: #27272a; }
+        .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
         .terminal-dot:nth-child(1) { background: #ef4444; }
         .terminal-dot:nth-child(2) { background: #eab308; }
         .terminal-dot:nth-child(3) { background: #22c55e; }
-
-        .terminal-title {
-            margin-left: 0.5rem;
-            color: var(--text-tertiary);
-            font-size: 0.75rem;
-            font-family: var(--font-mono);
-        }
-
-        .terminal-body {
-            padding: 1.5rem;
-            font-family: var(--font-mono);
-            font-size: 0.875rem;
-            line-height: 1.8;
-            color: #a1a1aa;
-            min-height: 200px;
-        }
-
-        .terminal-line {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .terminal-prompt {
-            color: var(--accent);
-        }
-
-        .terminal-command {
-            color: #e4e4e7;
-        }
-
-        .terminal-output {
-            color: #71717a;
-            padding-left: 1.25rem;
-        }
-
+        .terminal-title { margin-left: 0.5rem; color: var(--text-tertiary); font-size: 0.75rem; font-family: var(--font-mono); }
+        .terminal-body { padding: 1.5rem; font-family: var(--font-mono); font-size: 0.875rem; line-height: 1.8; color: #a1a1aa; min-height: 200px; }
+        .terminal-line { display: flex; gap: 0.5rem; margin-bottom: 0.25rem; }
+        .terminal-prompt { color: var(--accent); }
+        .terminal-command { color: #e4e4e7; }
+        .terminal-output { color: #71717a; padding-left: 1.25rem; }
         .terminal-cursor {
-            display: inline-block;
-            width: 8px;
-            height: 1.1em;
-            background: var(--accent);
-            animation: blink 1s step-end infinite;
+            display: inline-block; width: 8px; height: 1.1em;
+            background: var(--accent); animation: blink 1s step-end infinite;
             vertical-align: text-bottom;
         }
+        @keyframes blink { 50% { opacity: 0; } }
 
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
-
-        .section {
-            padding: 6rem 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .section-header {
-            margin-bottom: 3rem;
-        }
-
+        .section { padding: 6rem 2rem; max-width: 1400px; margin: 0 auto; }
+        .section-header { margin-bottom: 3rem; }
         .section-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 0.75rem;
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            font-size: 0.75rem; font-weight: 600; color: var(--accent);
+            text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;
         }
+        .section-label i { font-size: 1rem; }
+        .section-title { font-size: clamp(1.75rem, 3vw, 2.25rem); font-weight: 700; letter-spacing: -0.025em; line-height: 1.2; }
+        .section-subtitle { font-size: 1rem; color: var(--text-secondary); max-width: 55ch; margin-top: 0.75rem; line-height: 1.7; }
 
-        .section-label i {
-            font-size: 1rem;
-        }
-
-        .section-title {
-            font-size: clamp(1.75rem, 3vw, 2.25rem);
-            font-weight: 700;
-            letter-spacing: -0.025em;
-            line-height: 1.2;
-            color: var(--text-primary);
-        }
-
-        .section-subtitle {
-            font-size: 1rem;
-            color: var(--text-secondary);
-            max-width: 55ch;
-            margin-top: 0.75rem;
-            line-height: 1.7;
-        }
-
-        .overview-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-        }
-
-        .overview-content h3 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            margin-bottom: 1rem;
-        }
-
-        .overview-content p {
-            color: var(--text-secondary);
-            line-height: 1.7;
-            margin-bottom: 1.5rem;
-        }
-
-        .overview-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-        }
-
-        .stat-item {
-            text-align: left;
-        }
-
-        .stat-value {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            font-family: var(--font-mono);
-            letter-spacing: -0.02em;
-        }
-
-        .stat-label {
-            font-size: 0.8rem;
-            color: var(--text-tertiary);
-            margin-top: 0.25rem;
-        }
+        .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+        .overview-content p { color: var(--text-secondary); line-height: 1.7; margin-bottom: 1.5rem; }
+        .overview-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        .stat-item { text-align: left; }
+        .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono); letter-spacing: -0.02em; }
+        .stat-label { font-size: 0.8rem; color: var(--text-tertiary); margin-top: 0.25rem; }
 
         .overview-visual {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            box-shadow: var(--shadow-md);
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-md);
         }
 
-        .code-block {
-            background: var(--bg-tertiary);
-            border-radius: var(--radius-md);
-            overflow: hidden;
-        }
-
+        .code-block { background: var(--bg-tertiary); border-radius: var(--radius-md); overflow: hidden; }
         .code-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem 1rem; border-bottom: 1px solid var(--border);
         }
-
-        .code-filename {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
+        .code-filename { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); }
         .code-copy {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0.375rem;
-            color: var(--text-tertiary);
-            transition: color 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: none; border: none; cursor: pointer; padding: 0.375rem;
+            color: var(--text-tertiary); transition: color 0.2s;
+            display: flex; align-items: center; justify-content: center;
         }
-
-        .code-copy:hover {
-            color: var(--text-primary);
-        }
-
-        .code-copy:focus-visible {
-            outline: 2px solid var(--accent);
-            outline-offset: 2px;
-            border-radius: 4px;
-        }
-
+        .code-copy:hover { color: var(--text-primary); }
+        .code-copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
         .code-content {
-            padding: 1rem;
-            font-family: var(--font-mono);
-            font-size: 0.8125rem;
-            line-height: 1.7;
-            overflow-x: auto;
-            color: var(--text-primary);
+            padding: 1rem; font-family: var(--font-mono); font-size: 0.8125rem;
+            line-height: 1.7; overflow-x: auto; color: var(--text-primary);
         }
-
         .code-content .keyword { color: #7c3aed; }
         .code-content .string { color: #059669; }
         .code-content .comment { color: var(--text-tertiary); }
         .code-content .function { color: #2563eb; }
 
-        .features-masonry {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 1.5rem;
-        }
-
+        .features-masonry { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
         .feature-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: var(--radius-lg); padding: 2rem;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
+            position: relative; overflow: hidden;
         }
-
         .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--accent);
-            transform: scaleX(0);
-            transform-origin: left;
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: var(--accent); transform: scaleX(0); transform-origin: left;
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
-        .feature-card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .feature-card:hover {
-            box-shadow: var(--shadow-md);
-            border-color: var(--accent-light);
-        }
-
-        .feature-card-large {
-            grid-row: span 2;
-        }
-
+        .feature-card:hover::before { transform: scaleX(1); }
+        .feature-card:hover { box-shadow: var(--shadow-md); border-color: var(--accent-light); }
+        .feature-card-large { grid-row: span 2; }
         .feature-icon {
-            width: 48px;
-            height: 48px;
-            background: var(--accent-light);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1.25rem;
+            width: 48px; height: 48px; background: var(--accent-light);
+            border-radius: var(--radius-sm); display: flex; align-items: center;
+            justify-content: center; margin-bottom: 1.25rem;
         }
+        .feature-icon i { font-size: 1.5rem; color: var(--accent); }
+        .feature-card h3 { font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 0.5rem; }
+        .feature-card p { color: var(--text-secondary); font-size: 0.9375rem; line-height: 1.6; }
 
-        .feature-icon i {
-            font-size: 1.5rem;
-            color: var(--accent);
+        .structure-tree {
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: var(--radius-lg); padding: 2rem; font-family: var(--font-mono);
+            font-size: 0.8125rem; line-height: 1.8; color: var(--text-secondary);
+            overflow-x: auto; white-space: pre;
         }
+        .structure-tree .folder { color: var(--accent); font-weight: 600; }
+        .structure-tree .file { color: var(--text-primary); }
+        .structure-tree .comment { color: var(--text-tertiary); }
 
-        .feature-card h3 {
-            font-size: 1.125rem;
-            font-weight: 600;
-            letter-spacing: -0.01em;
-            margin-bottom: 0.5rem;
+        .types-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        .type-card {
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: var(--radius-md); padding: 1.25rem;
+            transition: all 0.2s;
         }
+        .type-card:hover { border-color: var(--accent-light); box-shadow: var(--shadow-sm); }
+        .type-name { font-family: var(--font-mono); font-size: 0.875rem; font-weight: 600; color: var(--accent); margin-bottom: 0.25rem; }
+        .type-example { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-tertiary); word-break: break-all; }
 
-        .feature-card p {
-            color: var(--text-secondary);
-            font-size: 0.9375rem;
-            line-height: 1.6;
+        .strategies-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+        .strategy-group h3 {
+            font-size: 0.875rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.05em; color: var(--accent); margin-bottom: 1rem;
         }
-
-        .tech-stack {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
+        .strategy-list { list-style: none; }
+        .strategy-list li {
+            font-family: var(--font-mono); font-size: 0.8125rem;
+            color: var(--text-secondary); padding: 0.375rem 0;
+            border-bottom: 1px solid var(--border-light);
         }
+        .strategy-list li:last-child { border-bottom: none; }
 
+        .cli-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .cli-item {
+            background: var(--bg-tertiary); border-radius: var(--radius-sm);
+            padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.25rem;
+        }
+        .cli-cmd { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--text-primary); }
+        .cli-desc { font-size: 0.8125rem; color: var(--text-tertiary); }
+
+        .tech-stack { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
         .tech-item {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 1.5rem;
-            text-align: center;
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: var(--radius-md); padding: 1.5rem; text-align: center;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
+        .tech-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .tech-item i { font-size: 2rem; color: var(--accent); margin-bottom: 0.75rem; display: block; }
+        .tech-item h4 { font-size: 0.9375rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .tech-item p { font-size: 0.8125rem; color: var(--text-tertiary); }
 
-        .tech-item:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .tech-item i {
-            font-size: 2rem;
-            color: var(--accent);
-            margin-bottom: 0.75rem;
-            display: block;
-        }
-
-        .tech-item h4 {
-            font-size: 0.9375rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .tech-item p {
-            font-size: 0.8125rem;
-            color: var(--text-tertiary);
-        }
-
-        .roadmap {
-            position: relative;
-            padding-left: 2rem;
-        }
-
+        .roadmap { position: relative; padding-left: 2rem; }
         .roadmap::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: var(--border);
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+            width: 2px; background: var(--border);
         }
-
-        .roadmap-item {
-            position: relative;
-            padding-bottom: 3rem;
-        }
-
-        .roadmap-item:last-child {
-            padding-bottom: 0;
-        }
-
+        .roadmap-item { position: relative; padding-bottom: 3rem; }
+        .roadmap-item:last-child { padding-bottom: 0; }
         .roadmap-dot {
-            position: absolute;
-            left: -2rem;
-            top: 0.375rem;
-            width: 12px;
-            height: 12px;
-            background: var(--bg-secondary);
-            border: 2px solid var(--accent);
-            border-radius: 50%;
-            transform: translateX(-5px);
+            position: absolute; left: -2rem; top: 0.375rem;
+            width: 12px; height: 12px; background: var(--bg-secondary);
+            border: 2px solid var(--accent); border-radius: 50%; transform: translateX(-5px);
         }
-
-        .roadmap-item.completed .roadmap-dot {
-            background: var(--accent);
-        }
-
+        .roadmap-item.completed .roadmap-dot { background: var(--accent); }
         .roadmap-phase {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.5rem;
+            font-size: 0.75rem; font-weight: 600; color: var(--accent);
+            text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;
         }
+        .roadmap-item h3 { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 0.5rem; }
+        .roadmap-item p { color: var(--text-secondary); font-size: 0.9375rem; line-height: 1.6; }
 
-        .roadmap-item h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            letter-spacing: -0.01em;
-            margin-bottom: 0.5rem;
-        }
-
-        .roadmap-item p {
-            color: var(--text-secondary);
-            font-size: 0.9375rem;
-            line-height: 1.6;
-        }
-
-        .run-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-        }
-
-        .run-steps {
-            counter-reset: step;
-        }
-
+        .run-section { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+        .run-steps { counter-reset: step; }
         .run-step {
-            counter-increment: step;
-            position: relative;
-            padding-left: 3rem;
-            margin-bottom: 2rem;
+            counter-increment: step; position: relative;
+            padding-left: 3rem; margin-bottom: 2rem;
         }
-
         .run-step::before {
-            content: counter(step);
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 2rem;
-            height: 2rem;
-            background: var(--accent-light);
-            color: var(--accent);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.875rem;
-            font-weight: 700;
-            font-family: var(--font-mono);
+            content: counter(step); position: absolute; left: 0; top: 0;
+            width: 2rem; height: 2rem; background: var(--accent-light);
+            color: var(--accent); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.875rem; font-weight: 700; font-family: var(--font-mono);
         }
+        .run-step h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .run-step p { color: var(--text-secondary); font-size: 0.9375rem; }
+        .run-code { background: var(--text-primary); border-radius: var(--radius-lg); overflow: hidden; }
+        .run-code .terminal-header { background: #27272a; }
+        .run-code .terminal-body { font-size: 0.8125rem; }
 
-        .run-step h4 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .run-step p {
-            color: var(--text-secondary);
-            font-size: 0.9375rem;
-        }
-
-        .run-code {
-            background: var(--text-primary);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-        }
-
-        .run-code .terminal-header {
-            background: #27272a;
-        }
-
-        .run-code .terminal-body {
-            font-size: 0.8125rem;
-        }
-
-        .footer {
-            border-top: 1px solid var(--border);
-            padding: 3rem 2rem;
-            margin-top: 4rem;
-        }
-
-        .footer-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .footer-text {
-            color: var(--text-tertiary);
-            font-size: 0.875rem;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 1.5rem;
-        }
-
-        .footer-links a {
-            color: var(--text-tertiary);
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: color 0.2s;
-        }
-
-        .footer-links a:hover {
-            color: var(--text-primary);
-        }
-
-        .footer-links a:focus-visible {
-            outline: 2px solid var(--accent);
-            outline-offset: 2px;
-            border-radius: 4px;
-        }
+        .footer { border-top: 1px solid var(--border); padding: 3rem 2rem; margin-top: 4rem; }
+        .footer-content { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .footer-text { color: var(--text-tertiary); font-size: 0.875rem; }
+        .footer-links { display: flex; gap: 1.5rem; }
+        .footer-links a { color: var(--text-tertiary); text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--text-primary); }
+        .footer-links a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
         .reveal {
-            opacity: 0;
-            transform: translateY(20px);
+            opacity: 0; transform: translateY(20px);
             transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
                         transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
-        .reveal.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
+        .reveal.visible { opacity: 1; transform: translateY(0); }
         .reveal-delay-1 { transition-delay: 0.1s; }
         .reveal-delay-2 { transition-delay: 0.2s; }
         .reveal-delay-3 { transition-delay: 0.3s; }
         .reveal-delay-4 { transition-delay: 0.4s; }
 
+        .checker-note {
+            background: var(--accent-light); border: 1px solid var(--accent);
+            border-radius: var(--radius-sm); padding: 0.75rem 1rem;
+            font-size: 0.8125rem; color: var(--accent-hover); margin-top: 1rem;
+        }
+
         @media (max-width: 1024px) {
-            .hero {
-                grid-template-columns: 1fr;
-                gap: 3rem;
-                padding: 3rem 1.5rem;
-            }
-
-            .hero-content {
-                padding-right: 0;
-                text-align: left;
-            }
-
-            .overview-grid {
-                grid-template-columns: 1fr;
-                gap: 3rem;
-            }
-
-            .features-masonry {
-                grid-template-columns: 1fr;
-            }
-
-            .feature-card-large {
-                grid-row: span 1;
-            }
-
-            .tech-stack {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .run-section {
-                grid-template-columns: 1fr;
-            }
+            .hero { grid-template-columns: 1fr; gap: 3rem; padding: 3rem 1.5rem; }
+            .hero-content { padding-right: 0; text-align: left; }
+            .overview-grid { grid-template-columns: 1fr; gap: 3rem; }
+            .features-masonry { grid-template-columns: 1fr; }
+            .feature-card-large { grid-row: span 1; }
+            .types-grid { grid-template-columns: repeat(2, 1fr); }
+            .strategies-grid { grid-template-columns: 1fr; }
+            .tech-stack { grid-template-columns: repeat(2, 1fr); }
+            .run-section { grid-template-columns: 1fr; }
+            .cli-grid { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 768px) {
-            nav {
-                padding: 1rem;
-            }
-
+            nav { padding: 1rem; }
             .nav-links {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--bg-secondary);
-                border-bottom: 1px solid var(--border);
-                flex-direction: column;
-                padding: 1rem;
-                gap: 0;
+                display: none; position: absolute; top: 100%; left: 0; right: 0;
+                background: var(--bg-secondary); border-bottom: 1px solid var(--border);
+                flex-direction: column; padding: 1rem; gap: 0;
             }
-
-            .nav-links.active {
-                display: flex;
-            }
-
-            .nav-links li {
-                border-bottom: 1px solid var(--border-light);
-            }
-
-            .nav-links li:last-child {
-                border-bottom: none;
-            }
-
-            .nav-links a {
-                display: block;
-                padding: 0.75rem 0;
-            }
-
-            .nav-mobile-toggle {
-                display: block;
-            }
-
-            .hero {
-                min-height: auto;
-                padding: 2rem 1rem;
-            }
-
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            .hero p {
-                font-size: 1rem;
-            }
-
-            .section {
-                padding: 3rem 1rem;
-            }
-
-            .overview-stats {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .tech-stack {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-content {
-                flex-direction: column;
-                gap: 1.5rem;
-                text-align: center;
-            }
-
-            .footer-links {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
+            .nav-links.active { display: flex; }
+            .nav-links li { border-bottom: 1px solid var(--border-light); }
+            .nav-links li:last-child { border-bottom: none; }
+            .nav-links a { display: block; padding: 0.75rem 0; }
+            .nav-mobile-toggle { display: block; }
+            .hero { min-height: auto; padding: 2rem 1rem; }
+            .hero h1 { font-size: 2rem; }
+            .hero p { font-size: 1rem; }
+            .section { padding: 3rem 1rem; }
+            .overview-stats { grid-template-columns: 1fr; gap: 1rem; }
+            .types-grid { grid-template-columns: 1fr; }
+            .tech-stack { grid-template-columns: 1fr; }
+            .footer-content { flex-direction: column; gap: 1.5rem; text-align: center; }
+            .footer-links { flex-wrap: wrap; justify-content: center; }
         }
 
         @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
-
-            .reveal {
-                opacity: 1;
-                transform: none;
-            }
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+            .reveal { opacity: 1; transform: none; }
         }
 
-        :focus-visible {
-            outline: 2px solid var(--accent);
-            outline-offset: 2px;
-        }
+        :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     </style>
 </head>
 <body>
@@ -903,13 +385,17 @@
         <ul class="nav-links" role="menubar">
             <li role="none"><a href="#overview" role="menuitem">Overview</a></li>
             <li role="none"><a href="#features" role="menuitem">Features</a></li>
-            <li role="none"><a href="#tech" role="menuitem">Tech Stack</a></li>
+            <li role="none"><a href="#structure" role="menuitem">Structure</a></li>
+            <li role="none"><a href="#api" role="menuitem">API</a></li>
+            <li role="none"><a href="#cli" role="menuitem">CLI</a></li>
+            <li role="none"><a href="#tech" role="menuitem">Tech</a></li>
             <li role="none"><a href="#roadmap" role="menuitem">Roadmap</a></li>
             <li role="none"><a href="#run" role="menuitem">Quick Start</a></li>
         </ul>
     </nav>
 
     <main id="main">
+        <!-- HERO -->
         <section class="hero" aria-labelledby="hero-title">
             <div class="hero-content">
                 <div class="hero-badge">
@@ -955,6 +441,7 @@
             </div>
         </section>
 
+        <!-- OVERVIEW -->
         <section id="overview" class="section" aria-labelledby="overview-title">
             <div class="overview-grid">
                 <div class="overview-content reveal">
@@ -968,7 +455,7 @@
                     <div class="overview-stats">
                         <div class="stat-item">
                             <div class="stat-value">9</div>
-                            <div class="stat-label">Data types supported</div>
+                            <div class="stat-label">Data types</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-value">21+</div>
@@ -976,7 +463,7 @@
                         </div>
                         <div class="stat-item">
                             <div class="stat-value">100%</div>
-                            <div class="stat-label">Deterministic output</div>
+                            <div class="stat-label">Deterministic</div>
                         </div>
                     </div>
                 </div>
@@ -1012,6 +499,7 @@ spec.add_testcases(
             </div>
         </section>
 
+        <!-- FEATURES -->
         <section id="features" class="section" aria-labelledby="features-title">
             <div class="section-header reveal">
                 <div class="section-label">
@@ -1074,6 +562,257 @@ spec.add_testcases(
             </div>
         </section>
 
+        <!-- PROJECT STRUCTURE -->
+        <section id="structure" class="section" aria-labelledby="structure-title">
+            <div class="section-header reveal">
+                <div class="section-label">
+                    <i class="ph ph-tree-structure"></i>
+                    Project Structure
+                </div>
+                <h2 id="structure-title" class="section-title">How the project is organized</h2>
+            </div>
+            <div class="structure-tree reveal">
+<span class="folder">testcase-generator/</span>
+├── <span class="file">generate_tests.py</span>      <span class="comment"># Main CLI entry point</span>
+├── <span class="file">PROMPT.md</span>              <span class="comment"># LLM prompt for generating spec.py + checker.py</span>
+├── <span class="file">FRAMEWORK_PROMPT.md</span>    <span class="comment"># Quick API reference (optional, for human reference)</span>
+├── <span class="folder">framework/</span>             <span class="comment"># Core library</span>
+│   ├── <span class="file">__init__.py</span>        <span class="comment"># Public API exports</span>
+│   ├── <span class="file">problem.py</span>         <span class="comment"># Problem class: orchestrates testcase generation</span>
+│   ├── <span class="file">generators.py</span>      <span class="comment"># Data types: Integer, Float, String, Array, Matrix, etc.</span>
+│   ├── <span class="file">graphs.py</span>          <span class="comment"># Graph and Tree data types</span>
+│   ├── <span class="file">strategies.py</span>      <span class="comment"># 21+ built-in test strategies</span>
+│   ├── <span class="file">validators.py</span>      <span class="comment"># Testcase validation logic</span>
+│   ├── <span class="file">runner.py</span>          <span class="comment"># C++ compilation and execution</span>
+│   ├── <span class="file">zipper.py</span>          <span class="comment"># HackerRank ZIP creation and verification</span>
+│   └── <span class="file">checker.py</span>         <span class="comment"># Checker utilities (load, validate, bundle)</span>
+├── <span class="folder">Sample_contest/</span>        <span class="comment"># Example contest (committed)</span>
+├── <span class="folder">contests/</span>              <span class="comment"># Your contests (gitignored)</span>
+└── <span class="folder">docs/</span>                  <span class="comment"># Landing page</span>
+    └── <span class="file">index.html</span>
+            </div>
+        </section>
+
+        <!-- DATA TYPES -->
+        <section id="types" class="section" aria-labelledby="types-title">
+            <div class="section-header reveal">
+                <div class="section-label">
+                    <i class="ph ph-diamond"></i>
+                    Data Types
+                </div>
+                <h2 id="types-title" class="section-title">9 types for modeling any input format</h2>
+                <p class="section-subtitle">Declare variables that match exactly what your solution reads via cin/scanf.</p>
+            </div>
+            <div class="types-grid reveal">
+                <div class="type-card">
+                    <div class="type-name">Integer</div>
+                    <div class="type-example">Integer(name="N", min_value=1, max_value=100000)</div>
+                </div>
+                <div class="type-card">
+                    <div class="type-name">LongInteger</div>
+                    <div class="type-example">LongInteger(name="X", min_value=-10**18, max_value=10**18)</div>
+                </div>
+                <div class="type-card">
+                    <div class="type-name">Float</div>
+                    <div class="type-example">Float(name="P", min_value=0.0, max_value=1.0, decimals=6)</div>
+                </div>
+                <div class="type-card">
+                    <div class="type-name">String</div>
+                    <div class="type-example">String(name="S", length=10, alphabet="abc")</div>
+                </div>
+                <div class="type-card">
+                    <div class="type-name">Array</div>
+                    <div class="type-example">Array(name="A", size=N, min_value=1, max_value=100)</div>
+                </div>
+                <div class="type-card">
+                    <div class="type-name">Matrix</div>
+                    <div class="type-example">Matrix(name="M", rows=N, cols=N, min_value=0, max_value=100)</div>
+                </div>
+                <div class="type-card">
+                    <div class="type-name">Permutation</div>
+                    <div class="type-example">Permutation(name="P", size=N)</div>
+                </div>
+                <div class="type-card">
+                    <div class="type-name">Graph</div>
+                    <div class="type-example">Graph(name="G", num_vertices=N, num_edges=M)</div>
+                </div>
+                <div class="type-card">
+                    <div class="type-name">Tree</div>
+                    <div class="type-example">Tree(name="T", num_vertices=N)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STRATEGIES -->
+        <section id="strategies" class="section" aria-labelledby="strategies-title">
+            <div class="section-header reveal">
+                <div class="section-label">
+                    <i class="ph ph-strategy"></i>
+                    Strategies
+                </div>
+                <h2 id="strategies-title" class="section-title">21+ built-in test strategies</h2>
+                <p class="section-subtitle">Edge cases, stress tests, and structural patterns — ready to use.</p>
+            </div>
+            <div class="strategies-grid reveal">
+                <div class="strategy-group">
+                    <h3>Scalar</h3>
+                    <ul class="strategy-list">
+                        <li>minimum()</li>
+                        <li>maximum()</li>
+                        <li>random_case()</li>
+                        <li>stress_case()</li>
+                        <li>all_equal()</li>
+                        <li>all_zero()</li>
+                        <li>increasing()</li>
+                        <li>decreasing()</li>
+                        <li>mixed_signs()</li>
+                        <li>positive_only()</li>
+                        <li>negative_only()</li>
+                        <li>alternating()</li>
+                        <li>boundary_values()</li>
+                        <li>duplicates()</li>
+                    </ul>
+                </div>
+                <div class="strategy-group">
+                    <h3>String</h3>
+                    <ul class="strategy-list">
+                        <li>min_length()</li>
+                        <li>max_length()</li>
+                        <li>single_char()</li>
+                        <li>all_same_char()</li>
+                        <li>alternating_chars()</li>
+                        <li>palindrome()</li>
+                        <li>repeated_pattern()</li>
+                    </ul>
+                </div>
+                <div class="strategy-group">
+                    <h3>Graph / Tree</h3>
+                    <ul class="strategy-list">
+                        <li>chain()</li>
+                        <li>star()</li>
+                        <li>disconnected()</li>
+                        <li>dense()</li>
+                        <li>single_node()</li>
+                        <li>balanced()</li>
+                        <li>skewed()</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SPECPY + CHECKER -->
+        <section id="api" class="section" aria-labelledby="api-title">
+            <div class="section-header reveal">
+                <div class="section-label">
+                    <i class="ph ph-code"></i>
+                    Writing Specs
+                </div>
+                <h2 id="api-title" class="section-title">spec.py and checker.py</h2>
+            </div>
+            <div class="overview-grid">
+                <div class="overview-visual reveal">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-filename">spec.py</span>
+                            <button class="code-copy" aria-label="Copy spec.py code">
+                                <i class="ph ph-copy"></i>
+                            </button>
+                        </div>
+                        <pre class="code-content"><span class="keyword">from</span> framework <span class="keyword">import</span> *
+
+spec = Problem(name=<span class="string">"Two Sum"</span>, testcases=<span class="string">30</span>)
+
+<span class="comment"># Define input variables</span>
+N = Integer(name=<span class="string">"N"</span>, min_value=<span class="string">2</span>, max_value=<span class="string">100000</span>)
+A = Array(name=<span class="string">"A"</span>, size=N, min_value=<span class="string">-10**9</span>, max_value=<span class="string">10**9</span>)
+
+<span class="comment"># Match solution.cpp read order</span>
+spec.input(N, A)
+
+<span class="comment"># Add test strategies</span>
+spec.add_testcases(
+    minimum(), maximum(), random_case(),
+    stress_case(), boundary_values(),
+)
+
+<span class="comment"># Custom test case</span>
+<span class="keyword">def</span> <span class="function">my_case</span>(rng):
+    <span class="keyword">return</span> {<span class="string">"N"</span>: <span class="string">5</span>, <span class="string">"A"</span>: [<span class="string">1</span>, <span class="string">2</span>, <span class="string">3</span>, <span class="string">4</span>, <span class="string">5</span>]}
+spec.add_custom_case(my_case)</pre>
+                    </div>
+                </div>
+                <div class="overview-visual reveal reveal-delay-2">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-filename">checker.py (optional)</span>
+                            <button class="code-copy" aria-label="Copy checker.py code">
+                                <i class="ph ph-copy"></i>
+                            </button>
+                        </div>
+                        <pre class="code-content"><span class="keyword">def</span> <span class="function">run_custom_checker</span>(t_obj, r_obj):
+    <span class="comment"># Read input</span>
+    <span class="keyword">with</span> open(t_obj.testcase_input_path) <span class="keyword">as</span> f:
+        data = f.read().split()
+
+    <span class="comment"># Read contestant output</span>
+    <span class="keyword">with</span> open(t_obj.testcase_output_path) <span class="keyword">as</span> f:
+        output = f.read().strip()
+
+    <span class="comment"># Validate and score</span>
+    <span class="keyword">if</span> output == expected_answer:
+        r_obj.result = <span class="keyword">True</span>
+        r_obj.score = <span class="string">1.0</span>
+        r_obj.message = <span class="string">"Success"</span>
+    <span class="keyword">else</span>:
+        r_obj.result = <span class="keyword">False</span>
+        r_obj.score = <span class="string">0.0</span>
+        r_obj.message = <span class="string">"Wrong answer"</span></pre>
+                    </div>
+                    <div class="checker-note">
+                        <strong>Optional:</strong> Only needed for partial scoring or custom validation. Without it, HackerRank uses exact-match comparison.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CLI -->
+        <section id="cli" class="section" aria-labelledby="cli-title">
+            <div class="section-header reveal">
+                <div class="section-label">
+                    <i class="ph ph-terminal-window"></i>
+                    CLI
+                </div>
+                <h2 id="cli-title" class="section-title">Command line interface</h2>
+            </div>
+            <div class="cli-grid reveal">
+                <div class="cli-item">
+                    <span class="cli-cmd">python generate_tests.py contests/MyContest</span>
+                    <span class="cli-desc">Generate all problems in a contest</span>
+                </div>
+                <div class="cli-item">
+                    <span class="cli-cmd">python generate_tests.py contests/MyContest --problem P1</span>
+                    <span class="cli-desc">Generate one problem only</span>
+                </div>
+                <div class="cli-item">
+                    <span class="cli-cmd">python generate_tests.py contests/MyContest --dry-run</span>
+                    <span class="cli-desc">Preview problems without generating</span>
+                </div>
+                <div class="cli-item">
+                    <span class="cli-cmd">python generate_tests.py contests/MyContest --seed 999</span>
+                    <span class="cli-desc">Custom random seed</span>
+                </div>
+                <div class="cli-item">
+                    <span class="cli-cmd">python generate_tests.py contests/MyContest --verbose</span>
+                    <span class="cli-desc">Enable debug logging</span>
+                </div>
+                <div class="cli-item">
+                    <span class="cli-cmd">python generate_tests.py contests/MyContest --no-solve</span>
+                    <span class="cli-desc">Generate inputs only, skip solution</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- TECH STACK -->
         <section id="tech" class="section" aria-labelledby="tech-title">
             <div class="section-header reveal">
                 <div class="section-label">
@@ -1107,6 +846,7 @@ spec.add_testcases(
             </div>
         </section>
 
+        <!-- ROADMAP -->
         <section id="roadmap" class="section" aria-labelledby="roadmap-title">
             <div class="section-header reveal">
                 <div class="section-label">
@@ -1144,6 +884,7 @@ spec.add_testcases(
             </div>
         </section>
 
+        <!-- QUICK START -->
         <section id="run" class="section" aria-labelledby="run-title">
             <div class="section-header reveal">
                 <div class="section-label">
@@ -1226,23 +967,21 @@ spec.add_testcases(
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const mobileToggle = document.querySelector('.nav-mobile-toggle');
-            const navLinks = document.querySelector('.nav-links');
+            var mobileToggle = document.querySelector('.nav-mobile-toggle');
+            var navLinks = document.querySelector('.nav-links');
             
             if (mobileToggle && navLinks) {
                 mobileToggle.addEventListener('click', function() {
-                    const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                    var isExpanded = this.getAttribute('aria-expanded') === 'true';
                     this.setAttribute('aria-expanded', !isExpanded);
                     navLinks.classList.toggle('active');
-                    
-                    const icon = this.querySelector('i');
+                    var icon = this.querySelector('i');
                     if (navLinks.classList.contains('active')) {
                         icon.className = 'ph ph-x';
                     } else {
                         icon.className = 'ph ph-list';
                     }
                 });
-
                 navLinks.querySelectorAll('a').forEach(function(link) {
                     link.addEventListener('click', function() {
                         navLinks.classList.remove('active');
@@ -1252,55 +991,42 @@ spec.add_testcases(
                 });
             }
 
-            const terminalCmd = document.getElementById('terminal-cmd');
-            const terminalOutput = document.getElementById('terminal-output');
-            const command = 'python generate_tests.py contests/MyContest';
-            let charIndex = 0;
-
+            var terminalCmd = document.getElementById('terminal-cmd');
+            var terminalOutput = document.getElementById('terminal-output');
+            var command = 'python generate_tests.py contests/MyContest';
+            var charIndex = 0;
             function typeCommand() {
                 if (charIndex < command.length) {
                     terminalCmd.textContent += command.charAt(charIndex);
                     charIndex++;
                     setTimeout(typeCommand, 50 + Math.random() * 30);
                 } else {
-                    setTimeout(function() {
-                        terminalOutput.style.display = 'block';
-                    }, 500);
+                    setTimeout(function() { terminalOutput.style.display = 'block'; }, 500);
                 }
             }
-
             setTimeout(typeCommand, 1000);
 
-            const revealElements = document.querySelectorAll('.reveal');
-
+            var revealElements = document.querySelectorAll('.reveal');
             function checkReveal() {
-                const windowHeight = window.innerHeight;
-                
+                var windowHeight = window.innerHeight;
                 revealElements.forEach(function(element) {
-                    const elementTop = element.getBoundingClientRect().top;
-                    const revealPoint = windowHeight - 100;
-                    
-                    if (elementTop < revealPoint) {
+                    var elementTop = element.getBoundingClientRect().top;
+                    if (elementTop < windowHeight - 100) {
                         element.classList.add('visible');
                     }
                 });
             }
-
             window.addEventListener('scroll', checkReveal);
             checkReveal();
 
-            const copyButtons = document.querySelectorAll('.code-copy');
-            
-            copyButtons.forEach(function(button) {
+            document.querySelectorAll('.code-copy').forEach(function(button) {
                 button.addEventListener('click', function() {
-                    const codeContent = this.closest('.code-block').querySelector('.code-content');
-                    const text = codeContent.textContent;
-                    
+                    var codeContent = this.closest('.code-block').querySelector('.code-content');
+                    var text = codeContent.textContent;
                     navigator.clipboard.writeText(text).then(function() {
-                        const icon = button.querySelector('i');
+                        var icon = button.querySelector('i');
                         icon.className = 'ph ph-check';
                         button.setAttribute('aria-label', 'Copied!');
-                        
                         setTimeout(function() {
                             icon.className = 'ph ph-copy';
                             button.setAttribute('aria-label', 'Copy code to clipboard');
@@ -1312,12 +1038,9 @@ spec.add_testcases(
             document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
                 anchor.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const target = document.querySelector(this.getAttribute('href'));
+                    var target = document.querySelector(this.getAttribute('href'));
                     if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                 });
             });

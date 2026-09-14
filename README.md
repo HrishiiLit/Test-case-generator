@@ -21,7 +21,7 @@ Requires Python 3.10+ and g++ (C++17).
 ```
 testcase-generator/
 ├── generate_tests.py      # Main CLI
-├── PROMPT.md              # LLM prompt for generating spec.py (self-contained)
+├── PROMPT.md              # LLM prompt for generating spec.py + checker.py
 ├── FRAMEWORK_PROMPT.md    # Quick API reference (optional, for human reference)
 ├── framework/             # Core library
 │   ├── __init__.py
@@ -31,7 +31,8 @@ testcase-generator/
 │   ├── strategies.py
 │   ├── validators.py
 │   ├── runner.py
-│   └── zipper.py
+│   ├── zipper.py
+│   └── checker.py         # Checker utilities (load, validate, bundle)
 ├── Sample_contest/        # Example contest (committed)
 └── contests/              # Your contests (gitignored)
 ```
@@ -102,13 +103,48 @@ def my_special_case(rng):
 spec.add_custom_case(my_special_case)
 ```
 
+## checker.py (Optional)
+
+The LLM may also generate a `checker.py` for custom judging. This is optional — only use it if your problem needs partial scoring, whitespace-tolerant matching, or custom validation logic. Without a checker, HackerRank uses exact-match comparison.
+
+If provided, place it alongside `spec.py` and `solution.cpp` in the problem folder.
+
+```python
+def run_custom_checker(t_obj, r_obj):
+    # Read input
+    with open(t_obj.testcase_input_path) as f:
+        data = f.read().split()
+
+    # Read contestant output
+    with open(t_obj.testcase_output_path) as f:
+        output = f.read().strip()
+
+    # Validate and score
+    if output == expected_answer:
+        r_obj.result = True
+        r_obj.score = 1.0
+        r_obj.message = "Success"
+    else:
+        r_obj.result = False
+        r_obj.score = 0.0
+        r_obj.message = f"Expected {expected_answer}, got {output}"
+```
+
+**Key fields:**
+- `t_obj.testcase_input_path` — path to input file
+- `t_obj.testcase_output_path` — path to contestant's output
+- `t_obj.testcase_expected_output_path` — path to expected output
+- `r_obj.result` — `True` (accepted) or `False` (rejected)
+- `r_obj.score` — `0.0` to `1.0`
+- `r_obj.message` — visible to the contestant
+
 ## How It Works
 
 1. You create folders and add `solution.cpp`
-2. You get `spec.py` from an LLM using `PROMPT.md` (provide problem screenshot or description + solution.cpp)
+2. You get `spec.py` (and optionally `checker.py`) from an LLM using `PROMPT.md` (provide problem screenshot or description + solution.cpp)
 3. The framework generates testcases, validates them, runs your solution, and creates ZIPs
 
-The `solution.cpp` is the oracle — it produces expected outputs. The framework never computes answers itself.
+The `solution.cpp` is the oracle — it produces expected outputs. The optional `checker.py` validates contestant output and computes scores.
 
 ## Deterministic
 

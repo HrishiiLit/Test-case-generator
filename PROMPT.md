@@ -1,6 +1,9 @@
 # Testcase Spec Generation Prompt
 
-You are a competitive-programming testcase specification generator. I will give you a problem statement (as screenshot or text) and the official solution (solution.cpp). You must generate ONLY a `spec.py` file that describes the problem's input structure and testcases using the framework API below.
+You are a competitive-programming testcase specification generator. I will give you a problem statement (as screenshot or text) and the official solution (solution.cpp). You must generate TWO files:
+
+1. `spec.py` - describes the problem's input structure and testcases using the framework API
+2. `checker.py` - a custom judge that validates contestant output and computes partial scores
 
 ## Input Methods
 
@@ -31,9 +34,10 @@ If I paste the problem text, use it directly.
 1. Create contest folder:    contests/MyContest/
 2. Create problem folder:    contests/MyContest/Problem_1/
 3. Add solution:             contests/MyContest/Problem_1/solution.cpp
-4. Get spec from LLM:       Provide this prompt + problem statement + solution.cpp
+4. Get spec+checker from LLM: Provide this prompt + problem statement + solution.cpp
 5. Verify samples:           Check the 2-3 sample test cases (N=5-20, values 1-100)
-6. Add spec:                 contests/MyContest/Problem_1/spec.py
+6. Add files:                contests/MyContest/Problem_1/spec.py
+                              contests/MyContest/Problem_1/checker.py
 7. Generate:                 python generate_tests.py contests/MyContest
 8. Find ZIP:                 contests/MyContest/Problem_1/Problem_1.zip
 9. Upload to HackerRank
@@ -57,6 +61,7 @@ contests/MyContest/
 └── Problem_1/
     ├── solution.cpp
     ├── spec.py
+    ├── checker.py
     ├── testcases/
     │   ├── input1.txt
     │   ├── output1.txt
@@ -137,6 +142,131 @@ def my_special_case(rng):
     return {"N": 5, "A": [1, 2, 3, 4, 5]}
 spec.add_custom_case(my_special_case)
 ```
+
+## Step 3: Write checker.py
+
+Generate a `checker.py` file that validates contestant output against the problem's requirements. This is a HackerRank custom checker.
+
+### Checker API
+
+```python
+# The checker receives two objects:
+# t_obj (TestStruct) - test case metadata
+# r_obj (ResultStruct) - write results here
+
+def run_custom_checker(t_obj, r_obj):
+    # Read input from: t_obj.testcase_input_path
+    # Read contestant output from: t_obj.testcase_output_path
+    # Read expected output from: t_obj.testcase_expected_output_path
+    #
+    # Set results on r_obj:
+    #   r_obj.result = True/False
+    #   r_obj.score = 0.0 to 1.0
+    #   r_obj.message = "description"
+    pass
+```
+
+### Available fields on t_obj
+
+| Field | Type | Description |
+|---|---|---|
+| `testcase_id` | `int` | ID of the test case |
+| `testcase_input_path` | `str` | Path to input file |
+| `testcase_output_path` | `str` | Path to contestant's output |
+| `testcase_expected_output_path` | `str` | Path to expected output |
+| `testcase_error_path` | `str` | Path to STDERR |
+| `submission_code_path` | `str` | Path to contestant's code |
+| `submission_language` | `str` | Language of submission |
+| `testcase_result` | `bool` | Whether output matches expected (exact match) |
+| `testcase_signal` | `int` | Exit code of the contestant's program |
+| `testcase_time` | `float` | Runtime in seconds |
+| `testcase_memory` | `int` | Peak memory in bytes |
+
+### Available fields on r_obj
+
+| Field | Type | Description |
+|---|---|---|
+| `result` | `bool` | `True` = accepted, `False` = rejected |
+| `score` | `float` | Score from 0.0 to 1.0 |
+| `message` | `str` | Visible to the contestant |
+
+### Checker patterns
+
+**Exact match (whitespace-tolerant):**
+```python
+def run_custom_checker(t_obj, r_obj):
+    with open(t_obj.testcase_output_path) as f:
+        contestant = f.read().strip().split()
+    with open(t_obj.testcase_expected_output_path) as f:
+        expected = f.read().strip().split()
+
+    if contestant == expected:
+        r_obj.result = True
+        r_obj.score = 1.0
+        r_obj.message = "Success"
+    else:
+        r_obj.result = False
+        r_obj.score = 0.0
+        r_obj.message = "Wrong answer"
+```
+
+**Partial scoring (e.g., output has multiple lines, each worth points):**
+```python
+def run_custom_checker(t_obj, r_obj):
+    with open(t_obj.testcase_output_path) as f:
+        contestant = f.read().strip().splitlines()
+    with open(t_obj.testcase_expected_output_path) as f:
+        expected = f.read().strip().splitlines()
+
+    correct = sum(1 for c, e in zip(contestant, expected) if c.strip() == e.strip())
+    total = len(expected)
+
+    r_obj.result = correct == total
+    r_obj.score = correct / total if total > 0 else 0.0
+    r_obj.message = f"{correct}/{total} correct"
+```
+
+**Problem-specific validation (recompute answer from input):**
+```python
+def run_custom_checker(t_obj, r_obj):
+    # Parse input
+    with open(t_obj.testcase_input_path) as f:
+        data = f.read().split()
+    it = iter(data)
+    n = int(next(it))
+    arr = [int(next(it)) for _ in range(n)]
+
+    # Read contestant output
+    with open(t_obj.testcase_output_path) as f:
+        output = f.read().strip()
+
+    # Compute expected answer independently
+    expected_answer = compute_your_answer(arr)
+
+    # Compare
+    if output == str(expected_answer):
+        r_obj.result = True
+        r_obj.score = 1.0
+        r_obj.message = "Success"
+    else:
+        r_obj.result = False
+        r_obj.score = 0.0
+        r_obj.message = f"Expected {expected_answer}, got {output}"
+```
+
+### Rules for checker.py
+
+1. **Always define `run_custom_checker(t_obj, r_obj)`** - this is the entry point HackerRank calls.
+
+2. **Recompute the answer from input** when possible. Don't rely on `testcase_expected_output_path` alone - the checker should be self-contained.
+
+3. **Handle edge cases gracefully** - wrap logic in try/except and set `r_obj.result = False` with a clear error message on failure.
+
+4. **Never print to stdout** in the checker. Use `r_obj.message` for communication.
+
+5. **Set meaningful messages** - the contestant sees `r_obj.message`. Use it to explain why the answer was wrong (e.g., "Wrong answer at line 3", "Route is not shortest").
+
+6. **Partial scoring** - set `r_obj.score` between 0.0 and 1.0 based on how much of the answer is correct. For many problems, binary (0.0 or 1.0) is fine.
 
 ### Rules for spec.py
 
@@ -457,7 +587,8 @@ Output:
 
 Return ONLY:
 1. One Python code block containing spec.py
-2. The 2-3 sample test cases
+2. One Python code block containing checker.py
+3. The 2-3 sample test cases
 
 Do NOT include explanations or commentary.
 

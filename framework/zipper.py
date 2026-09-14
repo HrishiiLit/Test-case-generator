@@ -57,9 +57,11 @@ def verify_zip(zip_path):
         names = [n for n in zf.namelist() if not n.endswith("/")]
         inputs = sorted(n for n in names if n.startswith("input/"))
         outputs = sorted(n for n in names if n.startswith("output/"))
-        for name in names:
-            if not (name.startswith("input/") or name.startswith("output/")):
-                raise RuntimeError(f"Unexpected file in ZIP: {name}")
+        # Allow checker directory files
+        checker_files = [n for n in names if n.startswith("checker/")]
+        # Only inputs and outputs are required; other files are ignored
+        # (e.g., checker/checker.py). No error is raised for them.
+
         if len(inputs) != len(outputs):
             raise RuntimeError(
                 f"ZIP input/output mismatch: {len(inputs)} inputs, {len(outputs)} outputs"

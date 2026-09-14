@@ -13,6 +13,7 @@ from framework.problem import Problem
 from framework.validators import validate_testcase
 from framework.runner import compile_cpp, run_cpp, normalize_output, cleanup_exe
 from framework.zipper import create_problem_zip, verify_zip
+from framework.checker import load_checker
 
 logger = logging.getLogger(__name__)
 
@@ -152,6 +153,10 @@ def process_problem(prob_dir, seed, timeout, no_solve, keep):
                 raise RuntimeError(f"{f.name} is empty")
 
         zip_path = prob_dir / f"{pid}.zip"
+        # Verify checker.py exists
+        checker_path = load_checker(prob_dir)
+        if checker_path is None:
+            logger.warning(f"  No checker.py found in {prob_dir}. Generate one using the PROMPT.md instructions.")
         create_problem_zip(tc_dir, zip_path, pid)
         in_count, out_count = verify_zip(zip_path)
         logger.info(f"  ZIP verified: {in_count} inputs, {out_count} outputs")

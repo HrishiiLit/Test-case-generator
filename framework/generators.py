@@ -14,6 +14,33 @@ def resolve_bound(bound, context):
     return int(bound)
 
 
+def resolve_range(bound, context, default=(0, 0)):
+    """Resolve a declared bound into its inclusive ``(min, max)`` range.
+
+    Unlike :func:`resolve_bound` this never falls back to a random draw, so a
+    constraint such as ``num_edges=M`` where ``M`` is an unset variable yields
+    ``M``'s declared limits instead of one arbitrary value. A value already
+    present in *context* (the case's own resolved variable) collapses to a
+    single-point range.
+    """
+    if bound is None:
+        return default
+    if callable(bound):
+        value = int(resolve_bound(bound, context))
+        return value, value
+    if hasattr(bound, "resolve"):
+        if bound.name in context:
+            value = int(context[bound.name])
+            return value, value
+        lo = getattr(bound, "min_value", None)
+        hi = getattr(bound, "max_value", None)
+        if lo is not None and hi is not None:
+            return int(resolve_bound(lo, context)), int(resolve_bound(hi, context))
+    value = int(resolve_bound(bound, context))
+    return value, value
+
+
+
 class Line:
     """Groups multiple variables to be rendered space-separated on a single line."""
 

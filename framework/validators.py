@@ -1,4 +1,4 @@
-from framework.generators import _Var, resolve_bound
+from framework.generators import _Var, resolve_bound, resolve_range
 from framework.graphs import Graph, Tree
 
 
@@ -13,7 +13,32 @@ def _check_var(v, val, context, errors, prefix=""):
 
     if isinstance(v, Graph):
         edges = val
+        nlo, nhi = resolve_range(getattr(v, "num_vertices", None), context, (1, 1))
         n = context.get(f"{v.name}_n", resolve_bound(v.num_vertices, context))
+        if not nlo <= n <= nhi:
+            errors.append(
+                f"{prefix}{v.name}_n={n} outside declared "
+                f"num_vertices [{nlo}, {nhi}]"
+            )
+        declared_m = context.get(f"{v.name}_m", len(edges))
+        if declared_m != len(edges):
+            errors.append(
+                f"{prefix}{v.name}: header declares {declared_m} edges but "
+                f"{len(edges)} were provided"
+            )
+        if v.num_edges is not None:
+            mlo, mhi = resolve_range(v.num_edges, context, (0, None))
+            if declared_m < mlo:
+                errors.append(
+                    f"{prefix}{v.name}_m={declared_m} below num_edges "
+                    f"minimum {mlo}"
+                )
+            if mhi is not None and declared_m > mhi:
+                errors.append(
+                    f"{prefix}{v.name}_m={declared_m} above num_edges "
+                    f"declared {mhi}"
+                )
+        seen = set()
         for idx, edge in enumerate(edges):
             a, b = edge[0], edge[1]
             if a < 1 or a > n:
@@ -22,10 +47,21 @@ def _check_var(v, val, context, errors, prefix=""):
                 errors.append(f"{prefix}Graph edge {idx}: vertex {b} out of range [1, {n}]")
             if not v.allow_self_loops and a == b:
                 errors.append(f"{prefix}Graph edge {idx}: self-loop at {a}")
+            if not v.allow_multi_edges:
+                key = (a, b) if v.directed else (min(a, b), max(a, b))
+                if key in seen:
+                    errors.append(f"{prefix}Graph edge {idx}: duplicate edge {a} {b}")
+                seen.add(key)
     elif isinstance(v, Tree):
         edges = val
+        nlo, nhi = resolve_range(getattr(v, "num_vertices", None), context, (1, 1))
         n = context.get(f"{v.name}_n", resolve_bound(v.num_vertices, context))
-        if len(edges) != n - 1 and n > 1:
+        if not nlo <= n <= nhi:
+            errors.append(
+                f"{prefix}{v.name}_n={n} outside declared "
+                f"num_vertices [{nlo}, {nhi}]"
+            )
+        if len(edges) != max(n - 1, 0) and n > 1:
             errors.append(f"{prefix}Tree: expected {n - 1} edges, got {len(edges)}")
         for idx, edge in enumerate(edges):
             a, b = edge[0], edge[1]
@@ -81,15 +117,20 @@ def validate_testcase(spec, values):
 
     if group is not None:
         inner_vars = flatten_vars(group)
-        t_var = next((x for x in spec._variables if x.name == "T"), None)
+        t_var = spec._count_var()
         if blocks is None:
             errors.append("Multi-test problem: missing '__blocks__' list")
         else:
-            if t_var is not None:
-                t_val = values.get("T")
+            if t_var is None:
+                errors.append(
+                    "Multi-test problem: no count variable declared before Blocks(...)"
+                )
+            else:
+                t_val = values.get(t_var.name)
                 if t_val != len(blocks):
                     errors.append(
-                        f"T={t_val} does not match number of blocks ({len(blocks)})"
+                        f"{t_var.name}={t_val} does not match number of "
+                        f"blocks ({len(blocks)})"
                     )
                 _check_var(t_var, t_val, values, errors)
 

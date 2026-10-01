@@ -9,7 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from framework.problem import Problem
+from framework.problem import Problem, STRATEGY_KEY
 from framework.validators import validate_testcase
 from framework.runner import compile_cpp, run_cpp, normalize_output, cleanup_exe
 from framework.zipper import create_problem_zip, verify_zip
@@ -78,31 +78,115 @@ def normalize_input(text):
 
 
 def write_testcase(spec, values, tc_dir, prefix, idx, exe_path, timeout, no_solve):
-    """Write input and optionally output for a single testcase."""
-    input_text = normalize_input(spec.render_testcase(values))
-    input_file = tc_dir / f"{prefix}_input{idx}.txt"
+    """Write input and optionally output for a single testcase.
+
+    Handles three kinds of *values*:
+    * Normal generated case dict – rendered via ``spec.render_testcase``.
+    * Literal sample dict with ``"__literal_input__"`` and ``"__literal_output__"`` keys.
+    * Sample dict produced by ``Problem.generate_sample_testcases``.
+    """
+    # Literal sample handling
+    if "__literal_input__" in values:
+        input_text = normalize_input(values["__literal_input__"])
+        output_text = values.get("__literal_output__")
+    else:
+        input_text = normalize_input(spec.render_testcase(values))
+        output_text = None
+
+    # Main cases are "input1.txt"; samples are "sample_input1.txt".
+    stem = f"{prefix}_" if prefix else ""
+    input_file = tc_dir / f"{stem}input{idx}.txt"
     with open(input_file, "w", newline="\n") as f:
         f.write(input_text)
 
     if no_solve or exe_path is None:
         return
 
-    try:
-        stdout = run_cpp(exe_path, input_file, timeout=timeout)
-        output_text = normalize_output(stdout)
-    except Exception as e:
-        if prefix == "sample":
-            logger.warning(f"  Sample testcase {idx} solution failed: {e}")
-            output_text = ""
-        else:
-            raise RuntimeError(f"Testcase {idx} solution failed: {e}")
+    if output_text is None:
+        # Normal case – run solution to obtain output.
+        try:
+            stdout = run_cpp(exe_path, input_file, timeout=timeout)
+            output_text = normalize_output(stdout)
+        except Exception as e:
+            label = "Sample testcase" if prefix == "sample" else "Testcase"
+            raise RuntimeError(f"{label} {idx} solution failed: {e}") from e
+    else:
+        # Literal sample – output already provided.
+        pass
 
-    output_file = tc_dir / f"{prefix}_output{idx}.txt"
+    output_file = tc_dir / f"{stem}output{idx}.txt"
     with open(output_file, "w", newline="\n") as f:
         f.write(output_text)
 
 
-def process_problem(prob_dir, seed, timeout, no_solve, keep):
+def case_status(spec, values):
+    """Validity verdict for one case: ``valid`` or the first violated constraint."""
+    try:
+        errors = validate_testcase(spec, values)
+    except Exception as e:
+        return f"error: {type(e).__name__}: {e}"
+    if errors:
+        return errors[0]
+    return "valid"
+
+
+def build_report_rows(spec, sample_cases, cases):
+    """One row per generated case: index, name, strategy, shape, status."""
+    rows = []
+    index = 0
+    for entries, label in ((sample_cases, "sample"), (cases, "testcase")):
+        for i, values in enumerate(entries, 1):
+            index += 1
+            rows.append(
+                {
+                    "index": index,
+                    "name": f"{label} {i}",
+                    "strategy": values.get(STRATEGY_KEY, "unknown"),
+                    "shape": spec.shape_signature(values),
+                    "status": case_status(spec, values),
+                }
+            )
+    return rows
+
+
+def format_report(spec, rows):
+    """Render report rows as an aligned table plus any redundancy findings."""
+    headers = ("#", "case", "strategy", "shape", "status")
+    keys = ("index", "name", "strategy", "shape", "status")
+    widths = [
+        max(len(h), *(len(str(r[k])) for r in rows)) if rows else len(h)
+        for h, k in zip(headers, keys)
+    ]
+
+    def line(values):
+        return "  ".join(str(v).ljust(w) for v, w in zip(values, widths)).rstrip()
+
+    out = [line(headers), line("-" * w for w in widths)]
+    out.extend(line(r[k] for k in keys) for r in rows)
+
+    flags = spec.redundancy_flags
+    if flags:
+        out.append("")
+        out.append("redundancy:")
+        for f in flags:
+            out.append(
+                f"  - {f['kind']}: '{f['first']}' and '{f['second']}' - {f['detail']}"
+            )
+    return "\n".join(out) + "\n"
+
+
+def generate_in_memory(spec, seed):
+    """Produce sample and main cases without compiling or writing anything."""
+    sample_rng = random.Random(seed + 9999)
+    sample_cases = spec.generate_sample_testcases(sample_rng, count=3, max_lines=15)
+    sample_sigs = set(spec._case_signature(v) for v in sample_cases)
+    cases = spec.generate_testcases(
+        random.Random(seed), max_retries=MAX_RETRIES, external_seen=sample_sigs
+    )
+    return sample_cases, cases
+
+
+def process_problem(prob_dir, seed, timeout, no_solve, keep, report=False):
     pid = prob_dir.name
     logger.info(f"Processing: {pid}")
 
@@ -118,21 +202,24 @@ def process_problem(prob_dir, seed, timeout, no_solve, keep):
 
     exe_path = None
     if not no_solve:
-        exe_path = compile_cpp(prob_dir / "solution.cpp", work_dir=prob_dir)
+        try:
+            exe_path = compile_cpp(prob_dir / "solution.cpp", work_dir=prob_dir)
+        except Exception as e:
+            raise RuntimeError(f"solution failed: {e}") from e
 
-    rng = random.Random(seed)
-
-    sample_rng = random.Random(seed + 9999)
-    sample_cases = spec.generate_sample_testcases(sample_rng, count=3, max_lines=15)
+    sample_cases, cases = generate_in_memory(spec, seed)
+    sample_sigs = set(spec._case_signature(v) for v in sample_cases)
     logger.info(f"  Generating {len(sample_cases)} sample testcases")
 
-    sample_sigs = set(spec._case_signature(v) for v in sample_cases)
-
     for i, values in enumerate(sample_cases, 1):
+        errors = validate_testcase(spec, values)
+        if errors:
+            raise RuntimeError(
+                f"Sample testcase {i} validation failed:\n"
+                + "\n".join(f"  - {e}" for e in errors)
+            )
         logger.info(f"  Generating sample testcase {i}/{len(sample_cases)}")
         write_testcase(spec, values, tc_dir, "sample", i, exe_path, timeout, no_solve)
-
-    cases = spec.generate_testcases(rng, max_retries=MAX_RETRIES, external_seen=sample_sigs)
 
     for i, values in enumerate(cases, 1):
         logger.info(f"  Generating testcase {i}/{len(cases)}")
@@ -142,6 +229,11 @@ def process_problem(prob_dir, seed, timeout, no_solve, keep):
             raise RuntimeError(f"Testcase {i} validation failed:\n" + "\n".join(f"  - {e}" for e in errors))
 
         write_testcase(spec, values, tc_dir, "", i, exe_path, timeout, no_solve)
+
+    if report:
+        text = format_report(spec, build_report_rows(spec, sample_cases, cases))
+        (prob_dir / "report.txt").write_text(text, newline="\n")
+        print(text, end="")
 
     if exe_path is not None and not keep:
         cleanup_exe(exe_path)
@@ -165,7 +257,8 @@ def process_problem(prob_dir, seed, timeout, no_solve, keep):
     return True
 
 
-def dry_run(contest_dir, problem_filter=None):
+def dry_run(contest_dir, problem_filter=None, show_applicability=False,
+            report=False, seed=12345):
     contest_dir = Path(contest_dir)
     problems = discover_problems(contest_dir, problem_filter, require_solution=False)
 
@@ -187,7 +280,20 @@ def dry_run(contest_dir, problem_filter=None):
             print(f"    Strategies: {len(spec._strategies)} + {len(spec._custom_cases)} custom")
             print(f"    Solution: {'OK' if has_solution else 'MISSING'}")
             print(f"    Status: {status}")
-            print(f"    ZIP: {prob_dir / f'{pid}.zip'}")
+            if show_applicability and spec._strategies:
+                print("    Strategy applicability:")
+                for s in spec._strategies:
+                    name = spec._origin_name(s)
+                    reason = spec.strategy_applicability(s)
+                    if reason is None:
+                        print(f"      {name}: YES")
+                    else:
+                        print(f"      {name}: NO")
+                        logger.warning("%s: not applicable: %s", name, reason)
+            if report:
+                sample_cases, cases = generate_in_memory(spec, seed)
+                print("    Report:")
+                print(format_report(spec, build_report_rows(spec, sample_cases, cases)), end="")
         except Exception as e:
             print(f"  {pid}")
             print(f"    Status: ERROR - {e}")
@@ -206,7 +312,8 @@ def main():
     parser.add_argument("--timeout", type=int, default=30, help="Solution timeout in seconds (default: 30)")
     parser.add_argument("--dry-run", action="store_true", help="Show problem summary without generating")
     parser.add_argument("--no-solve", action="store_true", help="Generate inputs only, skip solution execution")
-    parser.add_argument("--keep", action="store_true", help="Keep compiled executables")
+    parser.add_argument("--keep", action="store_true", help="Keep the compiled solution executable")
+    parser.add_argument("--report", action="store_true", help="Print a per-case report and write report.txt")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
     args = parser.parse_args()
 
@@ -218,7 +325,13 @@ def main():
 
     if args.dry_run:
         try:
-            success = dry_run(contest_dir, problem_filter=args.problem)
+            success = dry_run(
+                contest_dir,
+                problem_filter=args.problem,
+                show_applicability=True,
+                report=args.report,
+                seed=args.seed,
+            )
             if not success:
                 sys.exit(1)
         except (FileNotFoundError, ValueError) as e:
@@ -238,7 +351,10 @@ def main():
 
     for prob_dir in problems:
         try:
-            process_problem(prob_dir, args.seed, args.timeout, args.no_solve, args.keep)
+            process_problem(
+                prob_dir, args.seed, args.timeout, args.no_solve, args.keep,
+                report=args.report,
+            )
         except Exception as e:
             logger.error(f"Failed: {prob_dir.name}: {e}")
             sys.exit(1)

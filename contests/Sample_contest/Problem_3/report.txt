@@ -1,0 +1,25 @@
+#   case         strategy                                 shape           status
+--  -----------  ---------------------------------------  --------------  ------
+1   sample 1     sample_minimum                           constant        valid
+2   sample 2     sample_small_readable                    repeated        valid
+3   sample 3     sample_boundary                          random          valid
+4   testcase 1   random_case                              random          valid
+5   testcase 2   random_case                              random          valid
+6   testcase 3   custom case 'all_resting_except_first'   sorted          valid
+7   testcase 4   custom case 'all_resting_except_last'    reverse-sorted  valid
+8   testcase 5   custom case 'all_resting_except_middle'  random          valid
+9   testcase 6   custom case 'alternating_zero_one'       random          valid
+10  testcase 7   custom case 'alternating_one_zero'       repeated        valid
+11  testcase 8   custom case 'two_working_hours'          sorted          valid
+12  testcase 9   custom case 'zero_at_both_ends'          random          valid
+13  testcase 10  custom case 'split_long_rest_blocks'     random          valid
+14  testcase 11  custom case 'many_zeros'                 random          valid
+15  testcase 12  custom case 'sparse_zeros'               random          valid
+16  testcase 13  custom case 'large_almost_all_resting'   random          valid
+17  testcase 14  custom case 'large_alternating'          repeated        valid
+18  testcase 15  custom case 'large_zero_blocks'          repeated        valid
+19  testcase 16  custom case 'circular_boundary_case'     random          valid
+20  testcase 17  custom case 'maximum_valid_case'         reverse-sorted  valid
+21  testcase 18  random filler                            random          valid
+22  testcase 19  random filler                            random          valid
+23  testcase 20  random filler                            random          valid

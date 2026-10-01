@@ -1,0 +1,28 @@
+#   case         strategy                              shape            status
+--  -----------  ------------------------------------  ---------------  ------
+1   sample 1     sample_minimum                        constant         valid
+2   sample 2     sample_small_readable                 sorted           valid
+3   sample 3     sample_boundary                       constant         valid
+4   testcase 1   custom case 'multi_minimum'           constant         valid
+5   testcase 2   custom case 'multi_single_large_k'    constant         valid
+6   testcase 3   custom case 'multi_single_large_n'    random           valid
+7   testcase 4   custom case 'multi_large_n_k'         constant         valid
+8   testcase 5   custom case 'multi_impossible'        random           valid
+9   testcase 6   custom case 'multi_exact_total'       random           valid
+10  testcase 7   custom case 'multi_x_one'             random           valid
+11  testcase 8   custom case 'multi_all_equal'         constant         valid
+12  testcase 9   custom case 'multi_increasing'        sorted           valid
+13  testcase 10  custom case 'multi_decreasing'        reverse-sorted   valid
+14  testcase 11  custom case 'multi_alternating'       repeated+random  valid
+15  testcase 12  custom case 'multi_one_huge_element'  random           valid
+16  testcase 13  custom case 'multi_prefix_heavy'      reverse-sorted   valid
+17  testcase 14  custom case 'multi_suffix_heavy'      sorted           valid
+18  testcase 15  custom case 'multi_repeated_values'   random           valid
+19  testcase 16  custom case 'multi_random'            random           valid
+20  testcase 17  custom case 'multi_stress_n_budget'   constant         valid
+21  testcase 18  custom case 'multi_stress_k_budget'   constant         valid
+22  testcase 19  custom case 'multi_max_t'             constant         valid
+23  testcase 20  custom case 'multi_boundary_x'        random           valid
+
+redundancy:
+  - duplicate: 'custom case 'multi_maximum_values'' and 'custom case 'multi_large_n_k'' - identical rendered input text

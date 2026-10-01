@@ -1,0 +1,20 @@
+#   case         strategy               shape           status
+--  -----------  ---------------------  --------------  ------
+1   sample 1     sample_minimum         constant        valid
+2   sample 2     sample_small_readable  sorted          valid
+3   sample 3     sample_boundary        sorted          valid
+4   testcase 1   maximum                constant        valid
+5   testcase 2   all_equal              constant        valid
+6   testcase 3   increasing             sorted          valid
+7   testcase 4   decreasing             reverse-sorted  valid
+8   testcase 5   random_case            random          valid
+9   testcase 6   random_case            random          valid
+10  testcase 7   random_case            random          valid
+11  testcase 8   random_case            random          valid
+12  testcase 9   random_case            random          valid
+13  testcase 10  boundary_values        sorted          valid
+14  testcase 11  alternating            random          valid
+15  testcase 12  duplicates             random          valid
+16  testcase 13  random filler          reverse-sorted  valid
+17  testcase 14  random filler          random          valid
+18  testcase 15  random filler          random          valid

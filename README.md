@@ -2,7 +2,7 @@
 
 A folder-driven framework for generating competitive-programming testcases. No JSON config — just folders, solutions, and spec files.
 
-Requires Python 3.10+ and g++ (C++17).
+Requires Python 3.10+ and a C++17 compiler (g++).
 
 ## Quick Start
 

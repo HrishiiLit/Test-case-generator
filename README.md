@@ -48,6 +48,8 @@ python generate_tests.py contests/MyContest --verbose     # Debug
 python generate_tests.py contests/MyContest --no-solve    # Inputs only
 ```
 
+**Note:** Contest folder names containing spaces are not supported. Use folder names without spaces (e.g., `Sample_contest`) or rename the folder accordingly.
+
 ## spec.py
 
 ```python

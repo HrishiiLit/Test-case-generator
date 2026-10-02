@@ -1,0 +1,34 @@
+# Version control
+.git
+.gitignore
+.github
+
+# Python caches (nested paths need the ** prefix or they only match at the root)
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/*.egg-info/
+
+# Generated test data - never needed inside the image
+**/testcases/
+**/*.zip
+
+# Compiled solution binaries from a previous run
+**/solution
+**/solution.exe
+
+# Local scratch and virtualenvs
+tasks/
+**/.venv/
+**/venv/
+**/env/
+
+# Editor and OS noise
+**/.vscode/
+**/.idea/
+**/.DS_Store
+**/Thumbs.db
+**/desktop.ini

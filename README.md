@@ -2,7 +2,7 @@
 
 A folder-driven framework for generating competitive-programming testcases. No JSON config — just folders, solutions, and spec files.
 
-Requires Python 3.10+ and a C++17 compiler (g++).
+Requires Python 3.10+ and a C++17 compiler (g++), **or** just Docker Desktop — see [Running with Docker](#running-with-docker).
 
 ## Quick Start
 
@@ -16,6 +16,53 @@ Requires Python 3.10+ and a C++17 compiler (g++).
 7. Upload ZIP:               contests/MyContest/Problem_1/Problem_1.zip → HackerRank
 ```
 
+## Running with Docker
+
+Use this if you do not have Python or a C++ compiler installed. The image bundles
+Python 3.12 and `g++`, so [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+is the only requirement. There is nothing to pip install — the project is pure stdlib.
+
+**One-time setup**
+
+```bash
+docker build -t testcase-generator .
+```
+
+**Every run**
+
+```bash
+# Linux, macOS, WSL, Git Bash
+docker run --rm -it -v "$PWD:/app" testcase-generator contests/MyContest
+
+# PowerShell
+docker run --rm -it -v "${PWD}:/app" testcase-generator contests/MyContest
+
+# cmd.exe
+docker run --rm -it -v "%cd%:/app" testcase-generator contests/MyContest
+```
+
+The `-v` mount is what makes this pleasant: your `spec.py` edits are picked up with no
+rebuild, and the generated `testcases/` folder plus `Problem_1.zip` are written straight
+back to your project folder, ready to upload.
+
+Everything after the image name is passed to the CLI unchanged:
+
+```bash
+docker run --rm -it -v "$PWD:/app" testcase-generator contests/MyContest --report
+docker run --rm -it -v "$PWD:/app" testcase-generator contests/MyContest --problem Problem_1
+docker run --rm -it -v "$PWD:/app" testcase-generator contests/MyContest --dry-run
+docker run --rm -it -v "$PWD:/app" testcase-generator contests/MyContest --timeout 10
+```
+
+Notes:
+- The container compiles `solution.cpp` into a Linux binary, so a `solution` left behind
+  (only with `--keep`) will not run on Windows and vice versa. Generated inputs and
+  expected outputs are identical either way.
+- Reproducibility assumes the same container. Reuse the image rather than mixing a host
+  run and a container run if you care about exact output for a given seed.
+- Files created inside the container are owned by `root` on Linux hosts. On Windows and
+  macOS with Docker Desktop this is transparent.
+
 ## Project Structure
 
 ```
@@ -23,6 +70,7 @@ testcase-generator/
 ├── generate_tests.py      # Main CLI
 ├── PROMPT.md              # LLM prompt for generating spec.py + checker.py
 ├── FRAMEWORK_PROMPT.md    # Quick API reference (optional, for human reference)
+├── Dockerfile             # Optional: Python 3.12 + g++ environment
 ├── framework/             # Core library
 │   ├── __init__.py
 │   ├── problem.py
@@ -33,19 +81,23 @@ testcase-generator/
 │   ├── runner.py
 │   ├── zipper.py
 │   └── checker.py         # Checker utilities (load, validate, bundle)
-├── Sample_contest/        # Example contest (committed)
-└── contests/              # Your contests (gitignored)
+├── contests/
+│   └── Sample_contest/    # Example contest (committed; other contests are gitignored)
+└── tests/                 # Test suite
 ```
 
 ## CLI
 
 ```bash
-python generate_tests.py contests/MyContest              # All problems
-python generate_tests.py contests/MyContest --problem P1  # One problem
-python generate_tests.py contests/MyContest --dry-run     # Preview
-python generate_tests.py contests/MyContest --seed 999    # Custom seed
-python generate_tests.py contests/MyContest --verbose     # Debug
-python generate_tests.py contests/MyContest --no-solve    # Inputs only
+python generate_tests.py contests/MyContest                 # All problems
+python generate_tests.py contests/MyContest --problem P1     # One problem
+python generate_tests.py contests/MyContest --dry-run        # Preview, writes nothing
+python generate_tests.py contests/MyContest --report         # Per-case table
+python generate_tests.py contests/MyContest --seed 999       # Custom seed (default 12345)
+python generate_tests.py contests/MyContest --timeout 10     # Solution timeout, seconds (default 30)
+python generate_tests.py contests/MyContest --no-solve       # Inputs only
+python generate_tests.py contests/MyContest --keep           # Keep solution binary after the run
+python generate_tests.py contests/MyContest --verbose        # Debug logging
 ```
 
 **Note:** Contest folder names containing spaces are not supported. Use folder names without spaces (e.g., `Sample_contest`) or rename the folder accordingly.

@@ -335,6 +335,30 @@
             font-size: 0.8125rem; color: var(--accent-hover); margin-top: 1rem;
         }
 
+        /* DOCKER ALTERNATIVE */
+        .docker-alt {
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            border-radius: var(--radius-sm); padding: 0.875rem 1rem; margin-top: 0.875rem;
+        }
+        .docker-alt-title {
+            display: flex; gap: 0.5rem; align-items: center;
+            font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;
+        }
+        .docker-alt-title i { color: var(--accent); font-size: 1rem; }
+        .docker-alt p { color: var(--text-secondary); font-size: 0.8125rem; line-height: 1.65; }
+        .docker-cmd {
+            display: block; font-family: var(--font-mono); font-size: 0.75rem;
+            color: var(--text-primary); background: var(--bg-primary);
+            border: 1px solid var(--border); border-radius: 5px;
+            padding: 0.45rem 0.6rem; margin: 0.375rem 0;
+            overflow-x: auto; white-space: pre;
+        }
+        .docker-cmd-label {
+            font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--text-tertiary); font-family: var(--font-mono); margin-top: 0.625rem;
+        }
+
         /* HACKERRANK UPLOAD */
         .hr-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 3rem; align-items: start; }
         .hr-checklist { list-style: none; padding-left: 0; margin: 0; }
@@ -979,7 +1003,7 @@ spec.add_custom_case(my_case)</pre>
                 <div class="run-steps reveal">
                     <div class="run-step">
                         <h4>1. Get the code onto your computer</h4>
-                        <p>Open a terminal (PowerShell, Command Prompt, or Bash) and run <code>git clone https://github.com/HrishiiLit/Test-case-generator</code>, then <code>cd testcase-generator</code>. You should now see <code>generate_tests.py</code> and a <code>framework/</code> folder.</p>
+                        <p>Open a terminal (PowerShell, Command Prompt, or Bash) and run <code>git clone https://github.com/HrishiiLit/Test-case-generator</code>, then <code>cd testcase-generator</code>. You should now see <code>generate_tests.py</code> and a <code>framework/</code> folder. If you do not have Python or a C++ compiler installed, follow every step the same way and use the Docker commands in step 5 instead of the <code>python</code> command.</p>
                     </div>
                     <div class="run-step">
                         <h4>2. Make a folder for your contest</h4>
@@ -996,6 +1020,17 @@ spec.add_custom_case(my_case)</pre>
                     <div class="run-step">
                         <h4>5. Run the generator</h4>
                         <p>From the project root, run <code>python generate_tests.py contests/MyContest</code>. The tool writes the input files, runs your <code>solution.cpp</code> on each one to get the outputs, checks they all passed, and packs everything into a ZIP.</p>
+                        <div class="docker-alt">
+                            <div class="docker-alt-title"><i class="ph ph-cube"></i>No Python or C++ compiler installed?</div>
+                            <p>Use Docker instead. The image already contains Python and <code>g++</code>, so [Docker Desktop](https://www.docker.com/products/docker-desktop/) is the only thing you need — there is nothing to install or <code>pip install</code>. Build once, then run with your folder mounted so edits and results stay on your computer.</p>
+                            <div class="docker-cmd-label">Build once</div>
+                            <span class="docker-cmd">docker build -t testcase-generator .</span>
+                            <div class="docker-cmd-label">PowerShell / Command Prompt</div>
+                            <span class="docker-cmd">docker run --rm -it -v "${PWD}:/app" testcase-generator contests/MyContest</span>
+                            <div class="docker-cmd-label">Bash, Zsh, WSL, Git Bash</div>
+                            <span class="docker-cmd">docker run --rm -it -v "$PWD:/app" testcase-generator contests/MyContest</span>
+                            <p style="margin-top: 0.625rem;">In Command Prompt, replace <code>${PWD}</code> with <code>%cd%</code>. Add any flag from the CLI section after the contest path — for example <code>--report</code> or <code>--dry-run</code>. No rebuild is needed when you change <code>spec.py</code>.</p>
+                        </div>
                     </div>
                     <div class="run-step">
                         <h4>6. Confirm the ZIP appeared</h4>

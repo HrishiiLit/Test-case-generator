@@ -1,21 +1,28 @@
 # Contest data
 # Only contests/Sample_contest/ is committed. Every other contest folder is
 # ignored, including its files and subfolders.
+#
+# .gitignore only affects untracked files. Anything committed before this rule
+# existed stays tracked until it is removed with `git rm --cached <path>`.
 contests/*
 !contests/Sample_contest/
 !contests/Sample_contest/**
-# Generated testcases and zips (ignored everywhere, sample contest included)
+
+# Generated test data. Ignored everywhere, the sample contest included, so these
+# rules come after the negations above to win against them.
 **/testcases/
 **/*.zip
 
-# Python
-__pycache__/
-framework/__pycache__/
-*.pyc
-*.pyo
-
-# Compiled binaries
+# Compiled binaries. `solution` is produced without a file extension on Linux,
+# macOS and inside the Docker image, so it needs a rule of its own to stay out of
+# contests/Sample_contest/ as well.
+solution
+solution.exe
 *.exe
 *.out
 *.o
 
+# Python
+__pycache__/
+*.pyc
+*.pyo

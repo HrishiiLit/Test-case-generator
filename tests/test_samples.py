@@ -72,17 +72,30 @@ class SampleGenerationTest(unittest.TestCase):
                 errors, [], f"sample {index} violates the spec: {errors}"
             )
 
-    def test_invalid_sample_aborts_generation(self):
-        """process_problem must validate samples before writing them."""
+    def test_invalid_sample_is_dropped_not_written(self):
+        """An invalid sample shape is dropped and the problem still completes."""
         with tempfile.TemporaryDirectory() as tmp:
             prob = build_problem(tmp, INVALID_SAMPLE_SPEC)
 
-            with self.assertRaises(RuntimeError) as ctx:
+            with self.assertLogs(level="WARNING") as captured:
                 generate_tests.process_problem(
                     prob, seed=12345, timeout=5, no_solve=True, keep=False
                 )
 
-            self.assertIn("ample", str(ctx.exception))
+            joined = "\n".join(captured.output)
+            self.assertIn("dropping this sample shape", joined)
+            self.assertIn("N=999 > max 500", joined)
+
+            tc_dir = prob / "testcases"
+            written = sorted(p.name for p in tc_dir.glob("sample_input*.txt"))
+            self.assertEqual(
+                len(written), 3, "the dropped sample is replaced by a valid one"
+            )
+            self.assertNotIn(
+                "999\n1\n",
+                [p.read_text(encoding="utf-8") for p in tc_dir.glob("sample_input*.txt")],
+                "the invalid N=999 case must never reach disk",
+            )
 
     def test_failed_solution_reports_the_sample(self):
         """A crashing solution must fail naming the sample, not a size check."""

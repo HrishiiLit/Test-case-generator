@@ -299,6 +299,13 @@
         }
         .run-step h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
         .run-step p { color: var(--text-secondary); font-size: 0.9375rem; }
+        .run-step p code, .hr-body p code, .terminal-output code {
+            font-family: var(--font-mono); font-size: 0.8125rem;
+            background: var(--bg-tertiary); border: 1px solid var(--border);
+            border-radius: 5px; padding: 0.1rem 0.35rem; color: var(--text-primary);
+            overflow-wrap: anywhere;
+        }
+        .run-step em { color: var(--accent); font-style: normal; font-weight: 600; }
         .run-code { background: var(--text-primary); border-radius: var(--radius-lg); overflow: hidden; }
         .run-code .terminal-header { background: #27272a; }
         .run-code .terminal-body { font-size: 0.8125rem; }
@@ -328,6 +335,43 @@
             font-size: 0.8125rem; color: var(--accent-hover); margin-top: 1rem;
         }
 
+        /* HACKERRANK UPLOAD */
+        .hr-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 3rem; align-items: start; }
+        .hr-checklist { list-style: none; padding-left: 0; margin: 0; }
+        .hr-checklist li {
+            display: flex; gap: 1rem; align-items: flex-start;
+            padding: 1.125rem 0; border-top: 1px solid var(--border);
+        }
+        .hr-checklist li:last-child { border-bottom: 1px solid var(--border); }
+        .hr-index {
+            flex-shrink: 0; width: 1.75rem; height: 1.75rem;
+            background: var(--accent-light); color: var(--accent);
+            border-radius: 50%; font-family: var(--font-mono);
+            font-size: 0.8125rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .hr-body h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .hr-body p { font-size: 0.9375rem; color: var(--text-secondary); line-height: 1.65; }
+        .hr-body .path {
+            display: block; margin-top: 0.5rem; font-family: var(--font-mono);
+            font-size: 0.8125rem; color: var(--text-primary);
+            background: var(--bg-tertiary); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 0.5rem 0.75rem;
+            overflow-x: auto; white-space: nowrap;
+        }
+        .hr-path-card {
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-md);
+        }
+        .hr-path-card h3 { font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 1rem; }
+        .hr-warning {
+            display: flex; gap: 0.75rem; align-items: flex-start;
+            background: #fef3c7; border: 1px solid #fcd34d; color: #92400e;
+            border-radius: var(--radius-sm); padding: 0.875rem 1rem;
+            font-size: 0.8125rem; line-height: 1.6; margin-top: 1.5rem;
+        }
+        .hr-warning i { flex-shrink: 0; font-size: 1.125rem; color: #d97706; margin-top: 0.125rem; }
+
         @media (max-width: 1024px) {
             .hero { grid-template-columns: 1fr; gap: 3rem; padding: 3rem 1.5rem; }
             .hero-content { padding-right: 0; text-align: left; }
@@ -338,6 +382,7 @@
             .strategies-grid { grid-template-columns: 1fr; }
             .tech-stack { grid-template-columns: repeat(2, 1fr); }
             .run-section { grid-template-columns: 1fr; }
+            .hr-grid { grid-template-columns: 1fr; gap: 2.5rem; }
             .cli-grid { grid-template-columns: 1fr; }
         }
 
@@ -392,6 +437,7 @@
             <li role="none"><a href="#tech" role="menuitem">Tech</a></li>
             <li role="none"><a href="#roadmap" role="menuitem">Roadmap</a></li>
             <li role="none"><a href="#run" role="menuitem">Quick Start</a></li>
+            <li role="none"><a href="#hackerrank" role="menuitem">HackerRank Upload</a></li>
         </ul>
     </nav>
 
@@ -892,30 +938,38 @@ spec.add_custom_case(my_case)</pre>
                     <i class="ph ph-play"></i>
                     Quick Start
                 </div>
-                <h2 id="run-title" class="section-title">Up and running in minutes</h2>
-                <p class="section-subtitle">Follow these steps to generate your first testcases.</p>
+                <h2 id="run-title" class="section-title">Seven steps, no guesswork</h2>
+                <p class="section-subtitle">Every step shows the exact folder, exact file name, and exact command. Follow them top to bottom.</p>
             </div>
             <div class="run-section">
                 <div class="run-steps reveal">
                     <div class="run-step">
-                        <h4>Clone the repository</h4>
-                        <p>Get the framework on your local machine.</p>
+                        <h4>1. Get the code onto your computer</h4>
+                        <p>Open a terminal (PowerShell, Command Prompt, or Bash) and run <code>git clone https://github.com/HrishiiLit/Test-case-generator</code>, then <code>cd testcase-generator</code>. You should now see <code>generate_tests.py</code> and a <code>framework/</code> folder.</p>
                     </div>
                     <div class="run-step">
-                        <h4>Create a contest folder</h4>
-                        <p>Organize your problems under a contest directory.</p>
+                        <h4>2. Make a folder for your contest</h4>
+                        <p>Create one folder per contest inside <code>contests/</code>. Inside it, create one folder per problem. Use names without spaces (write <code>MyContest</code>, not <code>My Contest</code>).</p>
                     </div>
                     <div class="run-step">
-                        <h4>Add your solution</h4>
-                        <p>Place solution.cpp in the problem folder.</p>
+                        <h4>3. Drop in your working solution</h4>
+                        <p>Copy the C++ file you already trust into the problem folder as <code>solution.cpp</code>. This file is your <em>oracle</em> — it produces the expected outputs for every testcase, so it must be correct.</p>
                     </div>
                     <div class="run-step">
-                        <h4>Generate spec.py</h4>
-                        <p>Provide the problem screenshot or description + solution.cpp to your LLM with PROMPT.md.</p>
+                        <h4>4. Get <code>spec.py</code> from an AI assistant</h4>
+                        <p>Open <code>PROMPT.md</code>, copy its entire contents, then paste it into ChatGPT, Claude, Gemini, or Copilot together with two things: your problem statement (text or a screenshot of it) and the code of <code>solution.cpp</code>. Ask for the <code>spec.py</code> file back. Save the reply as <code>spec.py</code> in the same problem folder.</p>
                     </div>
                     <div class="run-step">
-                        <h4>Run the generator</h4>
-                        <p>Execute the CLI and watch testcases appear.</p>
+                        <h4>5. Run the generator</h4>
+                        <p>From the project root, run <code>python generate_tests.py contests/MyContest</code>. The tool writes the input files, runs your <code>solution.cpp</code> on each one to get the outputs, checks they all passed, and packs everything into a ZIP.</p>
+                    </div>
+                    <div class="run-step">
+                        <h4>6. Confirm the ZIP appeared</h4>
+                        <p>Look inside your problem folder. You should see <code>Problem_1.zip</code> plus the raw <code>inputs/</code> and <code>outputs/</code> folders. If the run stopped with an error, re-run with <code>--verbose</code> to see why.</p>
+                    </div>
+                    <div class="run-step">
+                        <h4>7. Upload the ZIP to HackerRank</h4>
+                        <p>Open your problem on HackerRank, go to the <strong>Test Cases</strong> tab, and upload the generated <code>.zip</code>. The full walkthrough is in the next section.</p>
                     </div>
                 </div>
                 <div class="run-code reveal reveal-delay-2">
@@ -928,7 +982,7 @@ spec.add_custom_case(my_case)</pre>
                     <div class="terminal-body">
                         <div class="terminal-line">
                             <span class="terminal-prompt">$</span>
-                            <span class="terminal-command">git clone https://github.com/user/testcase-generator</span>
+                            <span class="terminal-command">git clone https://github.com/HrishiiLit/Test-case-generator</span>
                         </div>
                         <div class="terminal-line">
                             <span class="terminal-prompt">$</span>
@@ -942,13 +996,100 @@ spec.add_custom_case(my_case)</pre>
                             <span class="terminal-prompt">$</span>
                             <span class="terminal-command">cp solution.cpp contests/MyContest/Problem_1/</span>
                         </div>
+                        <div class="terminal-output" style="margin-top: 0.5rem;">
+                            <div># save the AI's reply as spec.py in the problem folder, then:</div>
+                        </div>
                         <div class="terminal-line">
                             <span class="terminal-prompt">$</span>
                             <span class="terminal-command">python generate_tests.py contests/MyContest</span>
                         </div>
-                        <div class="terminal-output" style="margin-top: 0.5rem;">
-                            <div style="color: #22c55e;">Generation complete</div>
+                        <div class="terminal-output">
+                            <div>Contest: MyContest</div>
+                            <div>Problems: 1</div>
+                            <div style="margin-top: 0.5rem;">Processing: Problem_1</div>
+                            <div>  Name: Two Sum</div>
+                            <div>  Testcases: 30</div>
+                            <div>  ZIP: contests/MyContest/Problem_1/Problem_1.zip</div>
+                            <div style="color: #22c55e; margin-top: 0.5rem;">Generation complete</div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- HACKERRANK UPLOAD -->
+        <section id="hackerrank" class="section" aria-labelledby="hr-title">
+            <div class="section-header reveal">
+                <div class="section-label">
+                    <i class="ph ph-upload-simple"></i>
+                    HackerRank Upload
+                </div>
+                <h2 id="hr-title" class="section-title">Last mile: putting the ZIP on HackerRank</h2>
+                <p class="section-subtitle">The generator already builds a platform-ready archive. You only have to hand it over.</p>
+            </div>
+            <div class="hr-grid">
+                <ol class="hr-checklist reveal">
+                    <li>
+                        <span class="hr-index">1</span>
+                        <div class="hr-body">
+                            <h4>Find the file the tool created</h4>
+                            <p>The ZIP is written next to your inputs, named after the problem folder. One ZIP per problem.</p>
+                            <code class="path">contests/MyContest/Problem_1/Problem_1.zip</code>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="hr-index">2</span>
+                        <div class="hr-body">
+                            <h4>Open the problem editor on HackerRank</h4>
+                            <p>Sign in, go to your contest, click the problem, and switch to the <strong>Test Cases</strong> section. You need edit rights on the contest for this tab to appear.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="hr-index">3</span>
+                        <div class="hr-body">
+                            <h4>Upload the ZIP, do not upload the folder</h4>
+                            <p>Use the upload control, pick <code>Problem_1.zip</code> from your computer, and wait for the progress bar to finish. HackerRank unzips it and lists your numbered test files automatically.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="hr-index">4</span>
+                        <div class="hr-body">
+                            <h4>Check the numbering and the pairing</h4>
+                            <p>Each index must have both an input and an output: <code>1.in</code> / <code>1.out</code>, <code>2.in</code> / <code>2.out</code>, and so on. No gaps, no orphaned files, and the counts must match.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="hr-index">5</span>
+                        <div class="hr-body">
+                            <h4>Save, then validate against your own solution</h4>
+                            <p>Hit save. Run the reference solution once against the uploaded set — if it scores full marks, the archive and the judging settings both line up and the problem is ready to publish.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="hr-index">6</span>
+                        <div class="hr-body">
+                            <h4>Need to change something later?</h4>
+                            <p>Edit <code>spec.py</code>, re-run the generator with the <em>same seed</em>, and upload the fresh ZIP. Identical inputs are reproduced exactly, so re-uploading never churns your test set.</p>
+                        </div>
+                    </li>
+                </ol>
+                <div class="hr-path-card reveal reveal-delay-2">
+                    <h3>What lands in the ZIP</h3>
+                    <div class="structure-tree" style="padding: 0; background: none; border: none;">
+Problem_1/
+├── <span class="file">inputs/</span>
+│   ├── <span class="file">1.txt</span>   <span class="comment"># smallest legal input</span>
+│   ├── <span class="file">2.txt</span>   <span class="comment"># largest legal input</span>
+│   ├── <span class="file">3.txt</span>   <span class="comment"># random</span>
+│   └── <span class="file">30.txt</span>  <span class="comment"># stress, near limits</span>
+├── <span class="file">outputs/</span>
+│   ├── <span class="file">1.txt</span>   <span class="comment"># produced by solution.cpp</span>
+│   ├── <span class="file">2.txt</span>
+│   └── <span class="file">30.txt</span>
+                    </div>
+                    <div class="hr-warning">
+                        <i class="ph ph-warning-circle"></i>
+                        <span><strong>No checker? No problem.</strong> Without a <code>checker.py</code>, HackerRank compares contestant output to the expected output exactly. Add a checker only if you want partial credit or whitespace-tolerant matching.</span>
                     </div>
                 </div>
             </div>

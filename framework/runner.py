@@ -19,7 +19,7 @@ def compile_cpp(solution_path, work_dir=None):
     exe_path = work_dir / exe_name
 
     cmd = ["g++", "-std=c++17", "-O2", "-o", str(exe_path), str(solution_path)]
-    logger.info(f"Compiling {solution_path.name}")
+    logger.debug(f"Compiling {solution_path.name}")
     logger.debug(f"Command: {' '.join(cmd)}")
 
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
@@ -28,7 +28,7 @@ def compile_cpp(solution_path, work_dir=None):
         logger.error(f"Compilation failed:\n{result.stderr}")
         raise RuntimeError(f"Compilation failed:\n{result.stderr}")
 
-    logger.info(f"Compiled successfully: {exe_path}")
+    logger.debug(f"Compiled successfully: {exe_path}")
     return exe_path
 
 

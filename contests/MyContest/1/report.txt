@@ -1,0 +1,15 @@
+#   case         strategy                                  shape     status
+--  -----------  ----------------------------------------  --------  ------
+1   sample 1     sample_minimum                            constant  valid
+2   sample 2     sample_small_readable                     sorted    valid
+3   sample 3     sample_boundary                           sorted    valid
+4   testcase 1   custom case 'case_small_pair'             random    valid
+5   testcase 2   custom case 'case_no_solution'            sorted    valid
+6   testcase 3   custom case 'case_duplicate_values'       random    valid
+7   testcase 4   custom case 'case_negative_values'        random    valid
+8   testcase 5   custom case 'case_first_pair_not_unique'  random    valid
+9   testcase 6   custom case 'case_pair_at_end'            random    valid
+10  testcase 7   custom case 'case_all_equal'              constant  valid
+11  testcase 8   custom case 'case_large_no_solution'      sorted    valid
+12  testcase 9   custom case 'case_large_negative'         constant  valid
+13  testcase 10  random filler                             random    valid

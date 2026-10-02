@@ -1,19 +1,20 @@
 # Checker utilities for the testcase-generator framework
 
-"""Helper functions to detect and bundle a custom checker.
+"""Helper functions to detect and validate a custom checker.
 
 A problem may optionally contain a ``checker.py`` file next to the
-``spec.py`` and ``solution.cpp``.  When present, the generator will copy it
-into the final HackerRank ZIP under ``checker/checker.py``.
+``spec.py`` and ``solution.cpp``.  The generator only validates it and
+reports it: ``checker.py`` is **never** added to the ZIP.  The archive
+holds test data only (``input/`` and ``output/``), which is the layout
+HackerRank expects.  Attach the checker separately through the
+contest's custom-checker setting.
 
 The public API mirrors the plan:
 
 * ``load_checker(problem_dir)`` - return ``Path`` to the checker or ``None``
-* ``bundle_checker(zip_path, checker_path)`` - add the checker to the ZIP
 """
 
 import pathlib
-import zipfile
 
 def load_checker(problem_dir: pathlib.Path) -> pathlib.Path | None:
     """Return the path to ``checker.py`` inside *problem_dir* if it exists.
@@ -36,18 +37,6 @@ def load_checker(problem_dir: pathlib.Path) -> pathlib.Path | None:
     if not hasattr(mod, "run_custom_checker"):
         raise RuntimeError(f"Checker {checker_path} does not define run_custom_checker")
     return checker_path
-
-
-def bundle_checker(zip_path: pathlib.Path, checker_path: pathlib.Path) -> None:
-    """Add ``checker.py`` to *zip_path* under the ``checker/`` folder.
-
-    The function opens the ZIP in *append* mode and writes the file with the
-    internal name ``checker/checker.py``.  Existing ``checker/`` entries are
-    overwritten.
-    """
-    with zipfile.ZipFile(zip_path, "a", zipfile.ZIP_DEFLATED) as zf:
-        internal_name = "checker/checker.py"
-        zf.writestr(internal_name, checker_path.read_text(encoding="utf-8"))
 
 
 def ensure_checker(problem_dir: pathlib.Path) -> pathlib.Path:

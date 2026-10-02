@@ -633,7 +633,7 @@ spec.add_testcases(
                         <i class="ph ph-shield-check"></i>
                     </div>
                     <h3>Custom Judging (Optional)</h3>
-                    <p>Need partial scoring or custom validation? Drop a checker.py into the problem folder. Without one, HackerRank uses exact-match comparison by default.</p>
+                    <p>Need partial scoring or custom validation? Drop a checker.py into the problem folder &mdash; the generator validates it but keeps it out of the ZIP. Without one, HackerRank uses exact-match comparison by default.</p>
                 </div>
             </div>
         </section>
@@ -1164,7 +1164,7 @@ Problem_1.zip
                     </div>
                     <div class="hr-warning">
                         <i class="ph ph-warning-circle"></i>
-                        <span><strong>No checker? No problem.</strong> Without a <code>checker.py</code>, HackerRank compares contestant output to the expected output exactly. Add a checker only if you want partial credit or whitespace-tolerant matching.</span>
+                        <span><strong>No checker? No problem.</strong> Without a <code>checker.py</code>, HackerRank compares contestant output to the expected output exactly. Add a checker only if you want partial credit or whitespace-tolerant matching &mdash; and note that the ZIP never contains it. The archive is test data only, so a checker has to be attached separately through the contest's custom-checker setting.</span>
                     </div>
                 </div>
             </div>

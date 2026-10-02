@@ -80,7 +80,7 @@ testcase-generator/
 │   ├── validators.py
 │   ├── runner.py
 │   ├── zipper.py
-│   └── checker.py         # Checker utilities (load, validate, bundle)
+│   └── checker.py         # Checker utilities (load, validate)
 ├── contests/
 │   └── Sample_contest/    # Example contest (committed; other contests are gitignored)
 └── tests/                 # Test suite
@@ -162,6 +162,12 @@ spec.add_custom_case(my_special_case)
 The LLM may also generate a `checker.py` for custom judging. This is optional — only use it if your problem needs partial scoring, whitespace-tolerant matching, or custom validation logic. Without a checker, HackerRank uses exact-match comparison.
 
 If provided, place it alongside `spec.py` and `solution.cpp` in the problem folder.
+
+**The checker is not part of the ZIP.** `Problem_1.zip` contains test data only —
+`input/` and `output/`. The generator validates that your `checker.py` defines
+`run_custom_checker` and reports that a checker exists, but it never copies the
+file into the archive. Attach it separately through the contest's custom-checker
+setting on HackerRank.
 
 ```python
 def run_custom_checker(t_obj, r_obj):

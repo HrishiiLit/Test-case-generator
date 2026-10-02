@@ -479,8 +479,9 @@ def process_problem(prob_dir, seed, timeout, no_solve, keep, report=False,
                 ("file", display_path(zip_path)),
                 (
                     "checker",
-                    load_checker(prob_dir) and "custom"
-                    or "none (HackerRank compares exactly)",
+                    "custom (validated, not in the ZIP)"
+                    if load_checker(prob_dir)
+                    else "none (HackerRank compares exactly)",
                 ),
             ]
         )

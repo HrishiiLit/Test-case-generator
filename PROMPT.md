@@ -258,15 +258,17 @@ def run_custom_checker(t_obj, r_obj):
 
 1. **Always define `run_custom_checker(t_obj, r_obj)`** - this is the entry point HackerRank calls.
 
-2. **Recompute the answer from input** when possible. Don't rely on `testcase_expected_output_path` alone - the checker should be self-contained.
+2. **The checker stays out of the ZIP.** The generator only validates that this file exists and defines the entry point; it never copies it into the archive. The user attaches it separately through the contest's custom-checker setting, so nothing here depends on the checker travelling with the test data.
 
-3. **Handle edge cases gracefully** - wrap logic in try/except and set `r_obj.result = False` with a clear error message on failure.
+3. **Recompute the answer from input** when possible. Don't rely on `testcase_expected_output_path` alone - the checker should be self-contained.
 
-4. **Never print to stdout** in the checker. Use `r_obj.message` for communication.
+4. **Handle edge cases gracefully** - wrap logic in try/except and set `r_obj.result = False` with a clear error message on failure.
 
-5. **Set meaningful messages** - the contestant sees `r_obj.message`. Use it to explain why the answer was wrong (e.g., "Wrong answer at line 3", "Route is not shortest").
+5. **Never print to stdout** in the checker. Use `r_obj.message` for communication.
 
-6. **Partial scoring** - set `r_obj.score` between 0.0 and 1.0 based on how much of the answer is correct. For many problems, binary (0.0 or 1.0) is fine.
+6. **Set meaningful messages** - the contestant sees `r_obj.message`. Use it to explain why the answer was wrong (e.g., "Wrong answer at line 3", "Route is not shortest").
+
+7. **Partial scoring** - set `r_obj.score` between 0.0 and 1.0 based on how much of the answer is correct. For many problems, binary (0.0 or 1.0) is fine.
 
 ### Rules for spec.py
 

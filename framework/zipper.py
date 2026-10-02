@@ -57,11 +57,11 @@ def verify_zip(zip_path):
         names = [n for n in zf.namelist() if not n.endswith("/")]
         inputs = sorted(n for n in names if n.startswith("input/"))
         outputs = sorted(n for n in names if n.startswith("output/"))
-        # Allow checker directory files
-        checker_files = [n for n in names if n.startswith("checker/")]
-        # Only inputs and outputs are required; other files are ignored
-        # (e.g., checker/checker.py). No error is raised for them.
 
+        # A generated ZIP only ever holds input/ and output/. Anything else
+        # (a stray solution binary, or a checker.py someone added by hand) is
+        # ignored here, but it must not be uploaded: attach a checker through
+        # the contest's custom-checker setting instead.
         if len(inputs) != len(outputs):
             raise RuntimeError(
                 f"ZIP input/output mismatch: {len(inputs)} inputs, {len(outputs)} outputs"

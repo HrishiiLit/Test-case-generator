@@ -56,10 +56,11 @@ class TestErrorReporting(unittest.TestCase):
         spec = Problem(name="tiny", testcases=5)
         spec.input(Integer(name="X", min_value=1, max_value=1))
 
-        with self.assertRaises(RuntimeError) as ctx:
-            spec.generate_testcases(random.Random(1))
+        with self.assertLogs(level="WARNING") as captured:
+            cases = spec.generate_testcases(random.Random(1))
 
-        message = str(ctx.exception)
+        message = "\n".join(captured.output)
+        self.assertEqual(len(cases), 1, "the single distinct case is kept")
         self.assertIn("X", message)
         self.assertIn("1", message)
 

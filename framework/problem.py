@@ -12,6 +12,11 @@ logger = logging.getLogger(__name__)
 
 BLOCK_BUDGET = 200000
 
+#: Identical violations repeated this many times in a row mean the generator is
+#: deterministic (a custom case that ignores ``rng``), so further retries only
+#: waste time.
+STALL_REPEATS = 3
+
 STRATEGY_KEY = "__strategy__"
 
 
@@ -379,9 +384,14 @@ class Problem:
         """Generate exactly ``self.testcases`` distinct valid cases.
 
         Every case is tagged with the strategy or custom case that produced it.
-        Duplicates are regenerated rather than dropped, and a shortfall raises a
-        ``RuntimeError`` that names the requested and produced counts together
-        with the declared value ranges, so an undersized domain is obvious.
+        Duplicates are regenerated rather than dropped, and so is any case that
+        violates the declared bounds: each strategy gets ``max_retries`` draws
+        and the random filler keeps drawing until the suite is full, so a
+        strategy that occasionally overruns a limit (say an array element above
+        ``max_value``) costs one extra draw instead of aborting the run. A
+        candidate that cannot be produced is simply dropped, so a shortfall
+        warns about the requested and produced counts together with the declared
+        value ranges instead of raising.
 
         A rendered-input duplicate is dropped and regenerated — it is reported
         through :attr:`redundancy_flags` but the suite stays clean, so only a
@@ -396,6 +406,19 @@ class Problem:
         self._flagged = set()
         self._seen_texts = dict(external_texts) if external_texts else {}
         self._seen_shapes = {}
+
+        def _violations(vals):
+            """Spec violations for *vals*, or ``None`` when the case is valid.
+
+            An unrenderable case counts as valid here: :meth:`render_testcase`
+            decides that separately, so a bug in rendering cannot masquerade as
+            a constraint failure and burn every retry.
+            """
+            try:
+                errors = validate_testcase(self, vals)
+            except Exception as e:
+                return [f"{type(e).__name__}: {e}"]
+            return errors or None
 
         def _accept(vals, origin):
             vals = dict(vals)
@@ -445,8 +468,15 @@ class Problem:
             return True
 
         def _generate_unique(gen_fn, origin, attempts):
-            """Return the generated case, None if only duplicates, or raise."""
+            """Return the generated case, None if unusable, or raise.
+
+            A candidate that violates the spec is discarded and regenerated,
+            exactly like a duplicate, so one bad draw never reaches the suite.
+            """
             last_error = None
+            invalid_count = 0
+            repeat_violations = 0
+            last_violation = None
             for attempt in range(1, attempts + 1):
                 try:
                     vals = gen_fn()
@@ -460,11 +490,42 @@ class Problem:
                         "%s: attempt %d/%d failed: %s", origin, attempt, attempts, e
                     )
                     continue
+
+                errors = _violations(vals)
+                if errors:
+                    invalid_count += 1
+                    if errors[0] == last_violation:
+                        repeat_violations += 1
+                    else:
+                        last_violation = errors[0]
+                        repeat_violations = 1
+                    last_error = ValueError("; ".join(errors[:3]))
+                    logger.warning(
+                        "%s: attempt %d/%d violates the spec, regenerating: %s",
+                        origin, attempt, attempts, errors[0],
+                    )
+                    if repeat_violations >= STALL_REPEATS:
+                        logger.warning(
+                            "%s: the same violation keeps coming back "
+                            "(%d times), so this generator is deterministic and "
+                            "retrying cannot fix it",
+                            origin, repeat_violations,
+                        )
+                        break
+                    continue
+
                 if _accept(vals, origin):
                     return all_cases[-1]
                 logger.debug(
                     "%s: duplicate case (attempt %d/%d)", origin, attempt, attempts
                 )
+            if invalid_count:
+                logger.warning(
+                    "%s: %d of %d attempts violated the spec, so it contributes "
+                    "no test case; fix it in spec.py or drop it. First problem: %s",
+                    origin, invalid_count, attempts, last_error,
+                )
+                return None
             if last_error is not None:
                 raise RuntimeError(
                     f"{origin} failed after {attempts} attempts: {last_error}"
@@ -519,6 +580,13 @@ class Problem:
                 except Exception as e:
                     logger.warning("random filler: attempt %d failed: %s", attempts, e)
                     continue
+                errors = _violations(vals)
+                if errors:
+                    logger.debug(
+                        "random filler: attempt %d violates the spec: %s",
+                        attempts, errors[0],
+                    )
+                    continue
                 if _accept(vals, "random filler"):
                     remaining -= 1
 
@@ -528,10 +596,11 @@ class Problem:
                 for v in self._variables
                 if isinstance(v, _Var) and v.min_value is not None
             )
-            raise RuntimeError(
-                f"Spec '{self.name}': requested {self.testcases} test cases but only "
-                f"{len(all_cases)} distinct cases could be generated."
-                + (f" Distinct-value limits: {ranges}." if ranges else "")
+            logger.warning(
+                "Spec '%s': only %d of %d requested test cases could be generated; "
+                "the rest were dropped as invalid or duplicate.%s",
+                self.name, len(all_cases), self.testcases,
+                f" Declared value ranges: {ranges}." if ranges else "",
             )
 
         fatal = [f for f in self._redundancy_flags if f["kind"] == "redundant"]
@@ -597,11 +666,13 @@ class Problem:
     def generate_sample_testcases(self, rng, count=3, max_lines=15, external_seen=None):
         """Generate ``count`` distinct sample test cases that satisfy the spec.
 
-        Every candidate is validated: a strategy whose attempts are all
-        invalid aborts with the violated constraints named, and falling short
-        of *count* aborts too. ``max_lines`` is only a readability preference,
-        so a spec whose declared minimum size is already large keeps valid
-        oversized samples rather than failing or emitting invalid data.
+        Every candidate is validated: invalid candidates are discarded and regenerated,
+        and a shape whose every attempt is invalid is dropped with a warning
+        rather than aborting the run. Falling short of *count* is likewise only
+        a warning as long as at least one valid sample survives; ``max_lines`` is
+        only a readability preference, so a spec whose declared minimum size is
+        already large keeps valid oversized samples instead of failing or
+        emitting invalid data.
         """
         samples = []
         seen = set(external_seen) if external_seen else set()
@@ -672,10 +743,9 @@ class Problem:
                 else:
                     oversized.append((vals, origin))
             if produced and valid == 0:
-                raise RuntimeError(
-                    f"Sample generation failed for '{origin}': every attempt "
-                    f"violated the spec:\n"
-                    + "\n".join(f"  - {e}" for e in last_errors)
+                logger.warning(
+                    "%s: every attempt violated the spec, dropping this sample "
+                    "shape: %s", origin, last_errors[0] if last_errors else "unknown",
                 )
 
         attempts = 0
@@ -703,9 +773,15 @@ class Problem:
             _add(vals, origin)
 
         if len(samples) < count:
-            raise RuntimeError(
-                f"Spec '{self.name}': only {len(samples)} of {count} distinct "
-                f"valid sample test cases could be generated."
+            if not samples:
+                raise RuntimeError(
+                    f"Spec '{self.name}': no valid sample test case could be "
+                    f"generated; every candidate violated the declared bounds."
+                )
+            logger.warning(
+                "Spec '%s': only %d of %d requested samples could be generated; "
+                "the rest were dropped as invalid",
+                self.name, len(samples), count,
             )
         return samples[:count]
 

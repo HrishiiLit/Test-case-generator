@@ -22,7 +22,7 @@ def compile_cpp(solution_path, work_dir=None):
     logger.debug(f"Compiling {solution_path.name}")
     logger.debug(f"Command: {' '.join(cmd)}")
 
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", timeout=60)
 
     if result.returncode != 0:
         logger.error(f"Compilation failed:\n{result.stderr}")
@@ -36,12 +36,13 @@ def run_cpp(exe_path, input_path, timeout=5):
     exe_path = Path(exe_path)
     input_path = Path(input_path)
 
-    with open(input_path, "r", newline="") as f:
+    with open(input_path, "r", encoding="utf-8", newline="") as f:
         result = subprocess.run(
             [str(exe_path)],
             input=f.read(),
             capture_output=True,
             text=True,
+            encoding="utf-8",
             timeout=timeout,
         )
 

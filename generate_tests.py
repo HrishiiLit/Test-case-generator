@@ -204,7 +204,7 @@ def discover_problems(contest_dir, problem_filter=None, require_solution=True):
 
     problems = []
     for entry in sorted(contest_dir.iterdir()):
-        if not entry.is_dir():
+        if not entry.is_dir() or entry.name.startswith(".") or entry.name == "__pycache__":
             continue
         if problem_filter and entry.name != problem_filter:
             continue
@@ -252,7 +252,7 @@ def write_testcase(spec, values, tc_dir, prefix, idx, exe_path, timeout, no_solv
     # Main cases are "input1.txt"; samples are "sample_input1.txt".
     stem = f"{prefix}_" if prefix else ""
     input_file = tc_dir / f"{stem}input{idx}.txt"
-    with open(input_file, "w", newline="\n") as f:
+    with open(input_file, "w", encoding="utf-8", newline="\n") as f:
         f.write(input_text)
 
     if no_solve or exe_path is None:
@@ -271,7 +271,7 @@ def write_testcase(spec, values, tc_dir, prefix, idx, exe_path, timeout, no_solv
         pass
 
     output_file = tc_dir / f"{stem}output{idx}.txt"
-    with open(output_file, "w", newline="\n") as f:
+    with open(output_file, "w", encoding="utf-8", newline="\n") as f:
         f.write(output_text)
 
 

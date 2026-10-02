@@ -9,9 +9,15 @@ def resolve_bound(bound, context):
         return bound(context)
     if hasattr(bound, "resolve"):
         if bound.name in context:
-            return int(context[bound.name])
+            val = context[bound.name]
+            return val if isinstance(val, (int, float)) else int(val)
         return bound.resolve(_random.Random(0), context)
-    return int(bound)
+    if isinstance(bound, (int, float)):
+        return bound
+    try:
+        return int(bound)
+    except (ValueError, TypeError):
+        return float(bound)
 
 
 def resolve_range(bound, context, default=(0, 0)):
@@ -161,6 +167,9 @@ class String(_Var):
             n = rng.randint(1, 20)
         return "".join(rng.choice(self.alphabet) for _ in range(n))
 
+    def render(self, value):
+        return str(value)
+
 
 class Array(_Var):
     def __init__(self, name, size=None, min_size=None, max_size=None,
@@ -203,9 +212,13 @@ class Matrix(_Var):
         self.rows = rows
         self.cols = cols
 
+    def _resolve_dims(self, rng, context):
+        r = self._eval_bound(self.rows, context) if self.rows is not None else rng.randint(1, 20)
+        c = self._eval_bound(self.cols, context) if self.cols is not None else rng.randint(1, 20)
+        return int(r), int(c)
+
     def _generate(self, rng, context):
-        r = self._eval_bound(self.rows, context)
-        c = self._eval_bound(self.cols, context)
+        r, c = self._resolve_dims(rng, context)
         lo = self._eval_bound(self.min_value, context)
         hi = self._eval_bound(self.max_value, context)
         return [[rng.randint(lo, hi) for _ in range(c)] for _ in range(r)]
@@ -224,13 +237,18 @@ class Permutation(_Var):
         self.min_value = min_value
         self.max_value = max_value
 
+    def _resolve_size(self, rng, context):
+        if self.size is not None:
+            return int(self._eval_bound(self.size, context))
+        return rng.randint(1, 20)
+
     def _generate(self, rng, context):
-        n = self._eval_bound(self.size, context)
-        hi = self.max_value if self.max_value is not None else n
-        lo = self.min_value
-        values = list(range(lo, lo + n))
+        n = self._resolve_size(rng, context)
+        lo = self._eval_bound(self.min_value, context) if self.min_value is not None else 1
+        values = list(range(int(lo), int(lo + n)))
         rng.shuffle(values)
         return values
 
     def render(self, values):
         return " ".join(str(v) for v in values)
+

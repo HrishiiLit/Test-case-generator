@@ -299,6 +299,13 @@
         }
         .run-step h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
         .run-step p { color: var(--text-secondary); font-size: 0.9375rem; }
+        .run-step p code, .hr-body p code, .terminal-output code {
+            font-family: var(--font-mono); font-size: 0.8125rem;
+            background: var(--bg-tertiary); border: 1px solid var(--border);
+            border-radius: 5px; padding: 0.1rem 0.35rem; color: var(--text-primary);
+            overflow-wrap: anywhere;
+        }
+        .run-step em { color: var(--accent); font-style: normal; font-weight: 600; }
         .run-code { background: var(--text-primary); border-radius: var(--radius-lg); overflow: hidden; }
         .run-code .terminal-header { background: #27272a; }
         .run-code .terminal-body { font-size: 0.8125rem; }
@@ -328,6 +335,43 @@
             font-size: 0.8125rem; color: var(--accent-hover); margin-top: 1rem;
         }
 
+        /* HACKERRANK UPLOAD */
+        .hr-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 3rem; align-items: start; }
+        .hr-checklist { list-style: none; padding-left: 0; margin: 0; }
+        .hr-checklist li {
+            display: flex; gap: 1rem; align-items: flex-start;
+            padding: 1.125rem 0; border-top: 1px solid var(--border);
+        }
+        .hr-checklist li:last-child { border-bottom: 1px solid var(--border); }
+        .hr-index {
+            flex-shrink: 0; width: 1.75rem; height: 1.75rem;
+            background: var(--accent-light); color: var(--accent);
+            border-radius: 50%; font-family: var(--font-mono);
+            font-size: 0.8125rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .hr-body h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .hr-body p { font-size: 0.9375rem; color: var(--text-secondary); line-height: 1.65; }
+        .hr-body .path {
+            display: block; margin-top: 0.5rem; font-family: var(--font-mono);
+            font-size: 0.8125rem; color: var(--text-primary);
+            background: var(--bg-tertiary); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 0.5rem 0.75rem;
+            overflow-x: auto; white-space: nowrap;
+        }
+        .hr-path-card {
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-md);
+        }
+        .hr-path-card h3 { font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 1rem; }
+        .hr-warning {
+            display: flex; gap: 0.75rem; align-items: flex-start;
+            background: #fef3c7; border: 1px solid #fcd34d; color: #92400e;
+            border-radius: var(--radius-sm); padding: 0.875rem 1rem;
+            font-size: 0.8125rem; line-height: 1.6; margin-top: 1.5rem;
+        }
+        .hr-warning i { flex-shrink: 0; font-size: 1.125rem; color: #d97706; margin-top: 0.125rem; }
+
         @media (max-width: 1024px) {
             .hero { grid-template-columns: 1fr; gap: 3rem; padding: 3rem 1.5rem; }
             .hero-content { padding-right: 0; text-align: left; }
@@ -338,6 +382,7 @@
             .strategies-grid { grid-template-columns: 1fr; }
             .tech-stack { grid-template-columns: repeat(2, 1fr); }
             .run-section { grid-template-columns: 1fr; }
+            .hr-grid { grid-template-columns: 1fr; gap: 2.5rem; }
             .cli-grid { grid-template-columns: 1fr; }
         }
 
@@ -392,6 +437,7 @@
             <li role="none"><a href="#tech" role="menuitem">Tech</a></li>
             <li role="none"><a href="#roadmap" role="menuitem">Roadmap</a></li>
             <li role="none"><a href="#run" role="menuitem">Quick Start</a></li>
+            <li role="none"><a href="#hackerrank" role="menuitem">HackerRank Upload</a></li>
         </ul>
     </nav>
 
@@ -430,13 +476,18 @@
                         <span class="terminal-cursor"></span>
                     </div>
                     <div class="terminal-output" id="terminal-output" style="display: none;">
-                        <div>Contest: MyContest</div>
-                        <div>Problems: 3</div>
-                        <div>Seed: 12345</div>
-                        <div style="margin-top: 0.5rem;">Processing: Problem_1</div>
-                        <div>  Name: Two Sum</div>
-                        <div>  Testcases: 30</div>
-                        <div style="color: #22c55e; margin-top: 0.5rem;">Generation complete</div>
+                        <div>  problems  3    seed  12345    timeout  30s</div>
+                        <div>&nbsp;</div>
+                        <div>[1/3]  Problem_1</div>
+                        <div>  Two Sum</div>
+                        <div>  cases  3 samples, 30 test cases</div>
+                        <div>  zip    33 inputs, 33 outputs</div>
+                        <div>&nbsp;</div>
+                        <div>  #  problem    cases  samples  inputs  outputs  status</div>
+                        <div>  1  Problem_1     30        3      33       33  ok</div>
+                        <div>  2  Problem_2     30        3      33       33  ok</div>
+                        <div>  3  Problem_3     30        3      33       33  ok</div>
+                        <div style="color: #22c55e; margin-top: 0.5rem;">GENERATION COMPLETE</div>
                     </div>
                 </div>
             </div>
@@ -459,7 +510,7 @@
                             <div class="stat-label">Data types</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-value">21+</div>
+                            <div class="stat-value">28</div>
                             <div class="stat-label">Built-in strategies</div>
                         </div>
                         <div class="stat-item">
@@ -537,7 +588,7 @@ spec.add_testcases(
                         <i class="ph ph-strategy"></i>
                     </div>
                     <h3>Rich Strategy Library</h3>
-                    <p>21+ built-in strategies for scalars, strings, graphs, and trees. From minimum/maximum edge cases to complex graph topologies like chains, stars, and balanced trees.</p>
+                    <p>28 built-in strategies for scalars, strings, graphs, and trees. From minimum/maximum edge cases to complex graph topologies like chains, stars, and balanced trees.</p>
                 </div>
                 <div class="feature-card reveal reveal-delay-2">
                     <div class="feature-icon">
@@ -577,20 +628,29 @@ spec.add_testcases(
 ├── <span class="file">generate_tests.py</span>      <span class="comment"># Main CLI entry point</span>
 ├── <span class="file">PROMPT.md</span>              <span class="comment"># LLM prompt for generating spec.py + checker.py</span>
 ├── <span class="file">FRAMEWORK_PROMPT.md</span>    <span class="comment"># Quick API reference (optional, for human reference)</span>
+├── <span class="file">README.md</span>              <span class="comment"># Usage documentation</span>
+├── <span class="file">Dockerfile</span>             <span class="comment"># Container image with g++ and Python 3.12</span>
 ├── <span class="folder">framework/</span>             <span class="comment"># Core library</span>
 │   ├── <span class="file">__init__.py</span>        <span class="comment"># Public API exports</span>
-│   ├── <span class="file">problem.py</span>         <span class="comment"># Problem class: orchestrates testcase generation</span>
-│   ├── <span class="file">generators.py</span>      <span class="comment"># Data types: Integer, Float, String, Array, Matrix, etc.</span>
+│   ├── <span class="file">problem.py</span>         <span class="comment"># Problem class: generates, retries and validates cases</span>
+│   ├── <span class="file">generators.py</span>      <span class="comment"># Data types: Integer, Float, String, Array, Matrix, Line, Blocks</span>
 │   ├── <span class="file">graphs.py</span>          <span class="comment"># Graph and Tree data types</span>
-│   ├── <span class="file">strategies.py</span>      <span class="comment"># 21+ built-in test strategies</span>
+│   ├── <span class="file">strategies.py</span>      <span class="comment"># 28 built-in test strategies</span>
 │   ├── <span class="file">validators.py</span>      <span class="comment"># Testcase validation logic</span>
 │   ├── <span class="file">runner.py</span>          <span class="comment"># C++ compilation and execution</span>
 │   ├── <span class="file">zipper.py</span>          <span class="comment"># HackerRank ZIP creation and verification</span>
-│   └── <span class="file">checker.py</span>         <span class="comment"># Checker utilities (load, validate, bundle)</span>
-├── <span class="folder">Sample_contest/</span>        <span class="comment"># Example contest (committed)</span>
-├── <span class="folder">contests/</span>              <span class="comment"># Your contests (gitignored)</span>
+│   └── <span class="file">checker.py</span>         <span class="comment"># Checker loading and validation</span>
+├── <span class="folder">contests/</span>              <span class="comment"># Contests live here</span>
+│   ├── <span class="folder">Sample_contest/</span>     <span class="comment"># The only contest tracked by git</span>
+│   │   ├── <span class="folder">Problem_1/</span>       <span class="comment"># solution.cpp + spec.py + checker.py</span>
+│   │   └── <span class="folder">Problem_2/</span>       <span class="comment"># ...</span>
+│   └── <span class="folder">MyContest/</span>         <span class="comment"># Your contests (gitignored)</span>
+├── <span class="folder">tests/</span>                <span class="comment"># Regression tests for the framework</span>
 └── <span class="folder">docs/</span>                  <span class="comment"># Landing page</span>
     └── <span class="file">index.html</span>
+
+<span class="comment"># .gitignore tracks contests/Sample_contest only; every other</span>
+<span class="comment"># contest folder, plus testcases/ and *.zip, stays untracked.</span>
             </div>
         </section>
 
@@ -602,7 +662,7 @@ spec.add_testcases(
                     Data Types
                 </div>
                 <h2 id="types-title" class="section-title">9 types for modeling any input format</h2>
-                <p class="section-subtitle">Declare variables that match exactly what your solution reads via cin/scanf.</p>
+                <p class="section-subtitle">Declare variables that match exactly what your solution reads via cin/scanf. Two more helpers shape the layout: <code>Line(a, b)</code> puts values on one line, and <code>Blocks(...)</code> repeats a group per test case for multi-test formats.</p>
             </div>
             <div class="types-grid reveal">
                 <div class="type-card">
@@ -651,7 +711,7 @@ spec.add_testcases(
                     <i class="ph ph-strategy"></i>
                     Strategies
                 </div>
-                <h2 id="strategies-title" class="section-title">21+ built-in test strategies</h2>
+                <h2 id="strategies-title" class="section-title">28 built-in test strategies</h2>
                 <p class="section-subtitle">Edge cases, stress tests, and structural patterns — ready to use.</p>
             </div>
             <div class="strategies-grid reveal">
@@ -784,6 +844,7 @@ spec.add_custom_case(my_case)</pre>
                     CLI
                 </div>
                 <h2 id="cli-title" class="section-title">Command line interface</h2>
+                <p class="section-subtitle">One command per intent. Every flag has a default, so the plain form is all most runs need.</p>
             </div>
             <div class="cli-grid reveal">
                 <div class="cli-item">
@@ -791,25 +852,44 @@ spec.add_custom_case(my_case)</pre>
                     <span class="cli-desc">Generate all problems in a contest</span>
                 </div>
                 <div class="cli-item">
-                    <span class="cli-cmd">python generate_tests.py contests/MyContest --problem P1</span>
+                    <span class="cli-cmd">python generate_tests.py contests/MyContest --problem Problem_1</span>
                     <span class="cli-desc">Generate one problem only</span>
                 </div>
                 <div class="cli-item">
                     <span class="cli-cmd">python generate_tests.py contests/MyContest --dry-run</span>
-                    <span class="cli-desc">Preview problems without generating</span>
+                    <span class="cli-desc">Inspect specs and write nothing</span>
+                </div>
+                <div class="cli-item">
+                    <span class="cli-cmd">python generate_tests.py contests/MyContest --report</span>
+                    <span class="cli-desc">Per-case table: strategy, shape, validity</span>
                 </div>
                 <div class="cli-item">
                     <span class="cli-cmd">python generate_tests.py contests/MyContest --seed 999</span>
-                    <span class="cli-desc">Custom random seed</span>
-                </div>
-                <div class="cli-item">
-                    <span class="cli-cmd">python generate_tests.py contests/MyContest --verbose</span>
-                    <span class="cli-desc">Enable debug logging</span>
+                    <span class="cli-desc">Custom random seed (default 12345)</span>
                 </div>
                 <div class="cli-item">
                     <span class="cli-cmd">python generate_tests.py contests/MyContest --no-solve</span>
                     <span class="cli-desc">Generate inputs only, skip solution</span>
                 </div>
+                <div class="cli-item">
+                    <span class="cli-cmd">python generate_tests.py contests/MyContest --timeout 10</span>
+                    <span class="cli-desc">Solution timeout in seconds (default 30)</span>
+                </div>
+                <div class="cli-item">
+                    <span class="cli-cmd">python generate_tests.py contests/MyContest --keep</span>
+                    <span class="cli-desc">Keep solution.exe after the run</span>
+                </div>
+                <div class="cli-item">
+                    <span class="cli-cmd">python generate_tests.py contests/MyContest --verbose</span>
+                    <span class="cli-desc">Per-case progress and debug logging</span>
+                </div>
+                <div class="cli-item">
+                    <span class="cli-cmd">python generate_tests.py --help</span>
+                    <span class="cli-desc">Full flag list</span>
+                </div>
+            </div>
+            <div class="checker-note">
+                <strong>Naming rule:</strong> contest and problem folder names cannot contain spaces. Use <code>MyContest</code>, not <code>My Contest</code>.
             </div>
         </section>
 
@@ -892,30 +972,38 @@ spec.add_custom_case(my_case)</pre>
                     <i class="ph ph-play"></i>
                     Quick Start
                 </div>
-                <h2 id="run-title" class="section-title">Up and running in minutes</h2>
-                <p class="section-subtitle">Follow these steps to generate your first testcases.</p>
+                <h2 id="run-title" class="section-title">Seven steps, no guesswork</h2>
+                <p class="section-subtitle">Every step shows the exact folder, exact file name, and exact command. Follow them top to bottom.</p>
             </div>
             <div class="run-section">
                 <div class="run-steps reveal">
                     <div class="run-step">
-                        <h4>Clone the repository</h4>
-                        <p>Get the framework on your local machine.</p>
+                        <h4>1. Get the code onto your computer</h4>
+                        <p>Open a terminal (PowerShell, Command Prompt, or Bash) and run <code>git clone https://github.com/HrishiiLit/Test-case-generator</code>, then <code>cd testcase-generator</code>. You should now see <code>generate_tests.py</code> and a <code>framework/</code> folder.</p>
                     </div>
                     <div class="run-step">
-                        <h4>Create a contest folder</h4>
-                        <p>Organize your problems under a contest directory.</p>
+                        <h4>2. Make a folder for your contest</h4>
+                        <p>Create one folder per contest inside <code>contests/</code>. Inside it, create one folder per problem. Use names without spaces (write <code>MyContest</code>, not <code>My Contest</code>).</p>
                     </div>
                     <div class="run-step">
-                        <h4>Add your solution</h4>
-                        <p>Place solution.cpp in the problem folder.</p>
+                        <h4>3. Drop in your working solution</h4>
+                        <p>Copy the C++ file you already trust into the problem folder as <code>solution.cpp</code>. This file is your <em>oracle</em> — it produces the expected outputs for every testcase, so it must be correct.</p>
                     </div>
                     <div class="run-step">
-                        <h4>Generate spec.py</h4>
-                        <p>Provide the problem screenshot or description + solution.cpp to your LLM with PROMPT.md.</p>
+                        <h4>4. Get <code>spec.py</code> from an AI assistant</h4>
+                        <p>Open <code>PROMPT.md</code>, copy its entire contents, then paste it into ChatGPT, Claude, Gemini, or Copilot together with two things: your problem statement (text or a screenshot of it) and the code of <code>solution.cpp</code>. Ask for the <code>spec.py</code> file back. Save the reply as <code>spec.py</code> in the same problem folder.</p>
                     </div>
                     <div class="run-step">
-                        <h4>Run the generator</h4>
-                        <p>Execute the CLI and watch testcases appear.</p>
+                        <h4>5. Run the generator</h4>
+                        <p>From the project root, run <code>python generate_tests.py contests/MyContest</code>. The tool writes the input files, runs your <code>solution.cpp</code> on each one to get the outputs, checks they all passed, and packs everything into a ZIP.</p>
+                    </div>
+                    <div class="run-step">
+                        <h4>6. Confirm the ZIP appeared</h4>
+                        <p>Look inside your problem folder. You should see <code>Problem_1.zip</code> plus a <code>testcases/</code> folder holding the raw files (<code>sample_input1.txt</code>, <code>input1.txt</code>, <code>output1.txt</code>, and so on). If the run stopped with an error, re-run with <code>--verbose</code> to see why.</p>
+                    </div>
+                    <div class="run-step">
+                        <h4>7. Upload the ZIP to HackerRank</h4>
+                        <p>Open your problem on HackerRank, go to the <strong>Test Cases</strong> tab, and upload the generated <code>.zip</code>. The full walkthrough is in the next section.</p>
                     </div>
                 </div>
                 <div class="run-code reveal reveal-delay-2">
@@ -928,7 +1016,7 @@ spec.add_custom_case(my_case)</pre>
                     <div class="terminal-body">
                         <div class="terminal-line">
                             <span class="terminal-prompt">$</span>
-                            <span class="terminal-command">git clone https://github.com/user/testcase-generator</span>
+                            <span class="terminal-command">git clone https://github.com/HrishiiLit/Test-case-generator</span>
                         </div>
                         <div class="terminal-line">
                             <span class="terminal-prompt">$</span>
@@ -942,13 +1030,106 @@ spec.add_custom_case(my_case)</pre>
                             <span class="terminal-prompt">$</span>
                             <span class="terminal-command">cp solution.cpp contests/MyContest/Problem_1/</span>
                         </div>
+                        <div class="terminal-output" style="margin-top: 0.5rem;">
+                            <div># save the AI's reply as spec.py in the problem folder, then:</div>
+                        </div>
                         <div class="terminal-line">
                             <span class="terminal-prompt">$</span>
                             <span class="terminal-command">python generate_tests.py contests/MyContest</span>
                         </div>
-                        <div class="terminal-output" style="margin-top: 0.5rem;">
-                            <div style="color: #22c55e;">Generation complete</div>
+                        <div class="terminal-output">
+                            <div>  problems  1    seed  12345    timeout  30s</div>
+                            <div>&nbsp;</div>
+                            <div>[1/1]  Problem_1</div>
+                            <div>  Two Sum</div>
+                            <div>  path      contests\MyContest\Problem_1</div>
+                            <div>  cases  3 samples, 30 test cases</div>
+                            <div>  zip    33 inputs, 33 outputs</div>
+                            <div>  file     contests\MyContest\Problem_1\Problem_1.zip</div>
+                            <div>&nbsp;</div>
+                            <div>  #  problem    cases  samples  inputs  outputs  status</div>
+                            <div>  1  Problem_1     30        3      33       33  ok</div>
+                            <div style="color: #22c55e; margin-top: 0.5rem;">GENERATION COMPLETE</div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- HACKERRANK UPLOAD -->
+        <section id="hackerrank" class="section" aria-labelledby="hr-title">
+            <div class="section-header reveal">
+                <div class="section-label">
+                    <i class="ph ph-upload-simple"></i>
+                    HackerRank Upload
+                </div>
+                <h2 id="hr-title" class="section-title">Last mile: putting the ZIP on HackerRank</h2>
+                <p class="section-subtitle">The generator already builds a platform-ready archive. You only have to hand it over.</p>
+            </div>
+            <div class="hr-grid">
+                <ol class="hr-checklist reveal">
+                    <li>
+                        <span class="hr-index">1</span>
+                        <div class="hr-body">
+                            <h4>Find the file the tool created</h4>
+                            <p>The ZIP is written next to your inputs, named after the problem folder. One ZIP per problem.</p>
+                            <code class="path">contests/MyContest/Problem_1/Problem_1.zip</code>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="hr-index">2</span>
+                        <div class="hr-body">
+                            <h4>Open the problem editor on HackerRank</h4>
+                            <p>Sign in, go to your contest, click the problem, and switch to the <strong>Test Cases</strong> section. You need edit rights on the contest for this tab to appear.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="hr-index">3</span>
+                        <div class="hr-body">
+                            <h4>Upload the ZIP, do not upload the folder</h4>
+                            <p>Use the upload control, pick <code>Problem_1.zip</code> from your computer, and wait for the progress bar to finish. HackerRank unzips it and lists your numbered test files automatically.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="hr-index">4</span>
+                        <div class="hr-body">
+                            <h4>Check the numbering and the pairing</h4>
+                            <p>Open the archive and confirm the layout: <code>input/</code> and <code>output/</code> folders, zero-padded and index-matched (<code>input00.txt</code> with <code>output00.txt</code>, and so on). The first three indices are your sample cases; the rest are the generated test cases. Counts on both sides must match.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="hr-index">5</span>
+                        <div class="hr-body">
+                            <h4>Save, then validate against your own solution</h4>
+                            <p>Hit save. Run the reference solution once against the uploaded set — if it scores full marks, the archive and the judging settings both line up and the problem is ready to publish.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="hr-index">6</span>
+                        <div class="hr-body">
+                            <h4>Need to change something later?</h4>
+                            <p>Edit <code>spec.py</code>, re-run the generator with the <em>same seed</em>, and upload the fresh ZIP. Identical inputs are reproduced exactly, so re-uploading never churns your test set.</p>
+                        </div>
+                    </li>
+                </ol>
+                <div class="hr-path-card reveal reveal-delay-2">
+                    <h3>What lands in the ZIP</h3>
+                    <div class="structure-tree" style="padding: 0; background: none; border: none;">
+Problem_1.zip
+├── <span class="folder">input/</span>
+│   ├── <span class="file">input00.txt</span>  <span class="comment"># sample 1  (smallest legal input)</span>
+│   ├── <span class="file">input01.txt</span>  <span class="comment"># sample 2</span>
+│   ├── <span class="file">input02.txt</span>  <span class="comment"># sample 3  (boundary values)</span>
+│   ├── <span class="file">input03.txt</span>  <span class="comment"># test case 1</span>
+│   └── <span class="file">input12.txt</span>  <span class="comment"># test case 10 (stress, near limits)</span>
+└── <span class="folder">output/</span>
+    ├── <span class="file">output00.txt</span>  <span class="comment"># produced by solution.cpp</span>
+    ├── <span class="file">output01.txt</span>
+    └── <span class="file">output12.txt</span>
+                    </div>
+                    <div class="hr-warning">
+                        <i class="ph ph-warning-circle"></i>
+                        <span><strong>No checker? No problem.</strong> Without a <code>checker.py</code>, HackerRank compares contestant output to the expected output exactly. Add a checker only if you want partial credit or whitespace-tolerant matching.</span>
                     </div>
                 </div>
             </div>
@@ -959,8 +1140,9 @@ spec.add_custom_case(my_case)</pre>
         <div class="footer-content">
             <p class="footer-text">Testcase Generator - Built for competitive programmers</p>
             <div class="footer-links">
-                <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+                <a href="https://github.com/HrishiiLit/Test-case-generator" target="_blank" rel="noopener">GitHub</a>
                 <a href="#overview">Documentation</a>
+                <a href="#run">Quick Start</a>
                 <a href="#roadmap">Roadmap</a>
             </div>
         </div>

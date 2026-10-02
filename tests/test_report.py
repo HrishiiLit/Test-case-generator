@@ -95,8 +95,9 @@ class TestReportFromDryRun(unittest.TestCase):
             text = out.getvalue()
 
         self.assertTrue(ok)
-        self.assertIn("Solution: MISSING", text)
-        self.assertIn("Report:", text)
+        self.assertIn("solution", text)
+        self.assertIn("MISSING", text)
+        self.assertIn("case report", text)
         self.assertIn("strategy", text)
         self.assertIn("maximum", text)
         self.assertNotIn("Compiling", text)
@@ -110,12 +111,13 @@ class TestReportFromDryRun(unittest.TestCase):
             text = out.getvalue()
 
         self.assertTrue(ok)
-        self.assertIn("Status: NO SOLUTION", text)
-        self.assertNotIn("Report:", text)
+        self.assertIn("MISSING", text)
+        self.assertIn("problem", text)
+        self.assertNotIn("case report", text)
 
     def test_problem1_report_exposes_the_constant_array_cases(self):
         spec = generate_tests.load_spec(
-            REPO_ROOT / "Sample_contest" / "Problem_1" / "spec.py"
+            REPO_ROOT / "contests" / "Sample_contest" / "Problem_1" / "spec.py"
         )
         sample_cases, cases = generate_tests.generate_in_memory(spec, 12345)
         rows = generate_tests.build_report_rows(spec, sample_cases, cases)

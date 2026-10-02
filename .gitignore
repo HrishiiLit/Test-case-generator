@@ -1,4 +1,12 @@
-# User contest data (testcases, solutions, generated files)
+# Contest data
+# Only contests/Sample_contest/ is committed. Every other contest folder is
+# ignored, including its files and subfolders.
+contests/*
+!contests/Sample_contest/
+!contests/Sample_contest/**
+# Generated testcases and zips (ignored everywhere, sample contest included)
+**/testcases/
+**/*.zip
 
 # Python
 __pycache__/
@@ -11,6 +19,3 @@ framework/__pycache__/
 *.out
 *.o
 
-# Generated testcases and zips
-**/testcases/
-**/*.zip

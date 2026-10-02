@@ -316,9 +316,36 @@ def run_custom_checker(t_obj, r_obj):
    // -10^6 ≤ x ≤ 10^6   → min_value=-10**6, max_value=10**6
    ```
 
-7. **Variable names**: Use the SAME variable names as in the problem statement (e.g., `n`, `k`, `a`). This ensures clarity.
+7. **Every hard-coded value must sit inside its declared bounds** - this is the
+   single most common reason a custom case is thrown away. The generator
+   validates each case against `min_value`/`max_value` and DROPS anything that
+   fails, so an out-of-range literal silently costs you that test case.
 
-8. **Test case quality**: Every test case must serve a purpose. AVOID:
+   ```python
+   # WRONG: a has max_value=10**9, so 10**9+1 is rejected and the case is dropped
+   arr.append(10**9 + 1)
+
+   # RIGHT: derive values from the declared bound, never exceed it
+   HI = 10**9
+   arr.append(HI - 1)
+   arr.append(HI)          # HI-1 + HI == 2*HI - 1, so target must be that
+   ```
+
+   Rules that prevent every out-of-range value:
+   - `max_value` is **inclusive**. `max_value + 1` is always invalid.
+   - A sum can only reach `2 * max_value`. If you need a target close to the
+     ceiling, size it from the two values you actually wrote.
+   - Never write `10**9 + 1`, `100001` for `max_value=100000`, `n + 1` when `n`
+     is already at `max_value`, or `i - 1` when `i` starts at the minimum.
+   - Prefer named constants (`HI = 10**9`) and build values from them so the
+     relationship between the literals and the bounds is obvious.
+   - Negative minimums are equally binding: `-10**9 - 1` is invalid.
+   - Any value you compute (`i + j`, `len(arr)`, `sum(...)`) must be checked
+     against the variable's own `[min_value, max_value]` before you return it.
+
+8. **Variable names**: Use the SAME variable names as in the problem statement (e.g., `n`, `k`, `a`). This ensures clarity.
+
+9. **Test case quality**: Every test case must serve a purpose. AVOID:
    - **Duplicates**: No two test cases should have identical input parameters
    - **Redundant patterns**: Don't use `all_equal()` + `duplicates()` together (both test same scenario)
    - **Useless random**: Multiple `random_case()` produce similar random inputs with no specific purpose
@@ -330,7 +357,7 @@ def run_custom_checker(t_obj, r_obj):
    - Pattern traps: greedy fails, all same values, all different values
    - Stress: max constraint with meaningful variation
 
-9. **testcases count**: Set to 10 test cases total. Use custom cases for specific scenarios, not generic strategies.
+10. **testcases count**: Set to 10 test cases total. Use custom cases for specific scenarios, not generic strategies.
 
 ### TLE Considerations
 
@@ -592,7 +619,31 @@ Return ONLY:
 
 Do NOT include explanations or commentary.
 
+## Pre-Flight Checklist (run before you output anything)
+
+Walk every value in every custom case and confirm it against the variable's own
+`[min_value, max_value]`. A single violation makes the generator drop that whole
+test case, so this check decides how much of your suite survives.
+
+For each custom case, confirm:
+- [ ] Every scalar is within `[min_value, max_value]`, inclusive.
+- [ ] Every array/matrix element is within its variable's value range.
+- [ ] `len(arr)` equals the declared size variable, and the size itself is legal.
+- [ ] No literal is `max_value + 1` or `min_value - 1`; derived values (`a + b`,
+      `i + 1`, `-x`) were checked after computing them.
+- [ ] Sums and targets match the values actually written, not the ones you
+      intended (recompute the pair by hand).
+- [ ] Multi-test cases use `"__blocks__"`, and `"t"` equals `len(blocks)`.
+- [ ] No two custom cases produce identical rendered input.
+- [ ] `spec.input(...)` order matches the `cin`/`scanf` order in solution.cpp.
+
+If any value cannot be made legal, change the value - never widen the declared
+bound to fit a literal.
+
 ## Framework Features
 
 - **Deduplication**: The framework automatically removes duplicate test cases. You don't need to worry about producing identical inputs - they will be filtered out.
+- **Validation with retries**: A case that violates the declared bounds is
+  regenerated a few times and then dropped with a warning; the remaining count
+  is filled by the random filler. Valid specs never lose a test case.
 - **Auto-filling**: If you define fewer custom cases than `testcases` count, the framework fills the rest with random valid inputs.

@@ -11,22 +11,25 @@ from framework import (
 
 class TestGenerationCount(unittest.TestCase):
     def test_degenerate_strategies_cannot_reach_count(self):
-        """A spec whose value domain is smaller than testcases must fail loudly.
+        """A spec whose value domain is smaller than testcases drops the rest.
 
         Previously ``generate_testcases`` dropped duplicates without retrying and
         returned 2 cases for a request of 10, with no error anywhere downstream.
+        Now the shortfall is impossible to miss: it is reported as a warning that
+        names both counts instead of aborting the whole run.
         """
         spec = Problem(name="tiny-domain", testcases=10)
         x = Integer(name="X", min_value=1, max_value=2)
         spec.input(x)
         spec.add_testcases(minimum(), minimum(), maximum(), all_equal(), all_equal())
 
-        with self.assertRaises(RuntimeError) as ctx:
-            spec.generate_testcases(random.Random(3))
+        with self.assertLogs(level="WARNING") as captured:
+            cases = spec.generate_testcases(random.Random(3))
 
-        message = str(ctx.exception)
-        self.assertIn("10", message, "error must state the requested count")
-        self.assertIn("2", message, "error must state how many were produced")
+        message = "\n".join(captured.output)
+        self.assertEqual(len(cases), 2, "only the two distinct cases survive")
+        self.assertIn("10", message, "warning must state the requested count")
+        self.assertIn("2", message, "warning must state how many were produced")
 
     def test_reachable_count_is_exactly_requested(self):
         """Distinct-value strategies must still deliver exactly testcases cases."""

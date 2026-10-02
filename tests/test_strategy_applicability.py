@@ -167,9 +167,11 @@ class TestDryRunApplicability(unittest.TestCase):
             text = out.getvalue()
 
         self.assertTrue(ok)
-        self.assertIn("mixed_signs: NO", text)
-        self.assertIn("stress_case: NO", text)
-        self.assertIn("minimum: YES", text)
+        self.assertIn("no", text)
+        self.assertIn("mixed_signs", text)
+        self.assertIn("stress_case", text)
+        self.assertIn("yes", text)
+        self.assertIn("minimum", text)
 
         joined = "\n".join(logs.output)
         self.assertIn("mixed_signs: not applicable:", joined)

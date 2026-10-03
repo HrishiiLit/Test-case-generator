@@ -8,8 +8,8 @@ def _check_var(v, val, context, errors, prefix=""):
         errors.append(f"Missing value for '{name}'")
         return
 
-    lo = resolve_bound(getattr(v, "min_value", None), context)
-    hi = resolve_bound(getattr(v, "max_value", None), context)
+    lo = resolve_bound(v.min_value, context) if getattr(v, "min_value", None) is not None else None
+    hi = resolve_bound(v.max_value, context) if getattr(v, "max_value", None) is not None else None
 
     if isinstance(v, Graph):
         edges = val
@@ -69,25 +69,58 @@ def _check_var(v, val, context, errors, prefix=""):
                 errors.append(f"{prefix}Tree edge {idx}: vertex {a} out of range [1, {n}]")
             if b < 1 or b > n:
                 errors.append(f"{prefix}Tree edge {idx}: vertex {b} out of range [1, {n}]")
+    elif getattr(v, "rows", None) is not None or (isinstance(val, list) and val and isinstance(val[0], list)):
+        if getattr(v, "rows", None) is not None:
+            expected_r = resolve_bound(v.rows, context)
+            if len(val) != expected_r:
+                errors.append(f"{name}: declared {expected_r} rows but got {len(val)}")
+        expected_c = resolve_bound(v.cols, context) if getattr(v, "cols", None) is not None else None
+        for r_idx, row in enumerate(val):
+            if not isinstance(row, list):
+                errors.append(f"{name}[{r_idx}]: expected list, got {type(row).__name__}")
+                continue
+            if expected_c is not None and len(row) != expected_c:
+                errors.append(f"{name}[{r_idx}]: declared {expected_c} cols but got {len(row)}")
+            for c_idx, cell in enumerate(row):
+                if isinstance(cell, (int, float)):
+                    if lo is not None and cell < lo:
+                        errors.append(f"{name}[{r_idx}][{c_idx}]={cell} < min {lo}")
+                    if hi is not None and cell > hi:
+                        errors.append(f"{name}[{r_idx}][{c_idx}]={cell} > max {hi}")
+    elif hasattr(v, "_resolve_size") and getattr(v, "alphabet", None) is None and getattr(v, "rows", None) is None and type(v).__name__ == "Permutation":
+        if not isinstance(val, list):
+            errors.append(f"{name}: expected list, got {type(val).__name__}")
+            return
+        expected = resolve_bound(v.size, context) if getattr(v, "size", None) is not None else len(val)
+        if len(val) != expected:
+            errors.append(f"{name}: declared size {expected} but got {len(val)} elements")
+        lo_p = lo if lo is not None else 1
+        expected_set = set(range(int(lo_p), int(lo_p + len(val))))
+        if set(val) != expected_set:
+            errors.append(f"{name}: elements do not match valid permutation of {len(val)} values starting at {lo_p}")
     elif isinstance(val, list):
-        if hasattr(v, "_resolve_size"):
-            if getattr(v, "size", None) is not None:
-                expected = resolve_bound(v.size, context)
-                if len(val) != expected:
-                    errors.append(
-                        f"{name}: declared size {expected} but got {len(val)} elements"
-                    )
+        if getattr(v, "size", None) is not None:
+            expected = resolve_bound(v.size, context)
+            if len(val) != expected:
+                errors.append(f"{name}: declared size {expected} but got {len(val)} elements")
+        if getattr(v, "unique", False):
+            if len(set(val)) != len(val):
+                errors.append(f"{name}: duplicate elements found in unique array")
         for idx, item in enumerate(val):
             if isinstance(item, (int, float)):
-                if item < lo:
+                if lo is not None and item < lo:
                     errors.append(f"{name}[{idx}]={item} < min {lo}")
-                if item > hi:
+                if hi is not None and item > hi:
                     errors.append(f"{name}[{idx}]={item} > max {hi}")
     elif isinstance(val, str):
         if hasattr(v, "alphabet"):
             for ch in val:
                 if ch not in v.alphabet:
                     errors.append(f"{name}: char '{ch}' not in alphabet")
+        if getattr(v, "length", None) is not None:
+            expected_len = resolve_bound(v.length, context)
+            if len(val) != expected_len:
+                errors.append(f"{name}: declared length {expected_len} but got {len(val)}")
         if hasattr(v, "min_length") and v.min_length is not None:
             min_len = resolve_bound(v.min_length, context)
             if len(val) < min_len:
@@ -97,9 +130,9 @@ def _check_var(v, val, context, errors, prefix=""):
             if len(val) > max_len:
                 errors.append(f"{name}: length {len(val)} > max {max_len}")
     elif isinstance(val, (int, float)):
-        if val < lo:
+        if lo is not None and val < lo:
             errors.append(f"{name}={val} < min {lo}")
-        if val > hi:
+        if hi is not None and val > hi:
             errors.append(f"{name}={val} > max {hi}")
 
 

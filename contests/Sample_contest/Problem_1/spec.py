@@ -8,13 +8,21 @@ from framework import *
 # -10^9 <= a[i] <= 10^9
 # -2*10^9 <= target <= 2*10^9
 
-spec = Problem(name="Two Sum", testcases=10)
+spec = Problem(name="Two Sum", testcases=15)
 
 n = Integer(name="n", min_value=2, max_value=200000)
 target = LongInteger(name="target", min_value=-2 * 10**9, max_value=2 * 10**9)
 a = Array(name="a", size=n, min_value=-10**9, max_value=10**9)
 
 spec.input(n, target, a)
+
+spec.add_testcases(
+    minimum(),
+    maximum(),
+    all_equal(),
+    all_zero(),
+    random_case(),
+)
 
 
 # ---------------------------------------------------------

@@ -213,17 +213,44 @@ def _tree_case(v, context, rng, mode):
     return {v.name: v._generate_edges(n, rng), f"{v.name}_n": n}
 
 
+def _rand_between(lo, hi, is_float, decimals, rng):
+    if lo > hi:
+        lo, hi = hi, lo
+    if is_float:
+        return round(rng.uniform(float(lo), float(hi)), decimals)
+    return rng.randint(int(lo), int(hi))
+
+
+def _resolve_string_len(v, context, rng, default_min=5, default_max=20):
+    if getattr(v, "length", None) is not None:
+        return int(resolve_bound(v.length, context))
+    lo = int(resolve_bound(v.min_length, context)) if getattr(v, "min_length", None) is not None else default_min
+    hi = int(resolve_bound(v.max_length, context)) if getattr(v, "max_length", None) is not None else max(lo, default_max)
+    if hi < lo:
+        hi = lo
+    return rng.randint(lo, hi)
+
+
 def _make_scalar(v, val, context, rng):
     if isinstance(v, Graph):
         return _graph_case(v, context, rng, "min")
     if isinstance(v, Tree):
         return _tree_case(v, context, rng, "min")
+    if type(v).__name__ == "Permutation" and hasattr(v, "_resolve_size"):
+        n = v._resolve_size(rng, context)
+        lo_p = resolve_bound(getattr(v, "min_value", 1), context)
+        return {v.name: list(range(int(lo_p), int(lo_p + n)))}
+    if hasattr(v, "_resolve_dims"):
+        r, c = v._resolve_dims(rng, context)
+        return {v.name: [[val] * c for _ in range(r)]}
     if hasattr(v, "_resolve_size"):
         n = v._resolve_size(rng, context)
         return {v.name: [val] * n}
     if hasattr(v, "alphabet"):
-        n = resolve_bound(v.length, context) if v.length else 5
-        return {v.name: v.alphabet[0] * n if v.alphabet else "a" * n}
+        n = int(resolve_bound(v.length, context)) if getattr(v, "length", None) is not None else (
+            int(resolve_bound(v.min_length, context)) if getattr(v, "min_length", None) is not None else 5
+        )
+        return {v.name: (v.alphabet[0] if v.alphabet else "a") * n}
     return {v.name: val}
 
 
@@ -245,13 +272,25 @@ def maximum():
                 result.update(_graph_case(v, context, rng, "max"))
             elif isinstance(v, Tree):
                 result.update(_tree_case(v, context, rng, "max"))
+            elif type(v).__name__ == "Permutation" and hasattr(v, "_resolve_size"):
+                n = v._resolve_size(rng, context)
+                lo_p = resolve_bound(getattr(v, "min_value", 1), context)
+                p = list(range(int(lo_p), int(lo_p + n)))
+                p.reverse()
+                result[v.name] = p
+            elif hasattr(v, "_resolve_dims"):
+                r, c = v._resolve_dims(rng, context)
+                hi = resolve_bound(getattr(v, "max_value", 0), context)
+                result[v.name] = [[hi] * c for _ in range(r)]
             else:
                 hi = resolve_bound(getattr(v, "max_value", None), context)
                 if hasattr(v, "_resolve_size"):
                     n = v._resolve_size(rng, context)
                     result[v.name] = [hi] * n
                 elif hasattr(v, "alphabet"):
-                    n = resolve_bound(v.length, context) if v.length else 20
+                    n = int(resolve_bound(v.length, context)) if getattr(v, "length", None) is not None else (
+                        int(resolve_bound(v.max_length, context)) if getattr(v, "max_length", None) is not None else 20
+                    )
                     result[v.name] = (v.alphabet[-1] if v.alphabet else "z") * n
                 else:
                     result[v.name] = hi
@@ -358,10 +397,17 @@ def stress_case():
         for v in spec._variables:
             hi = resolve_bound(getattr(v, "max_value", None), context)
             lo = resolve_bound(getattr(v, "min_value", None), context)
+            is_flt = type(v).__name__ == "Float"
+            dec = getattr(v, "decimals", 2)
             if isinstance(v, Graph):
                 result.update(_graph_case(v, context, rng, "max"))
             elif isinstance(v, Tree):
                 result.update(_tree_case(v, context, rng, "max"))
+            elif type(v).__name__ == "Permutation" and hasattr(v, "_resolve_size"):
+                result.update(_make_scalar(v, 0, context, rng))
+            elif hasattr(v, "_resolve_dims"):
+                r, c = v._resolve_dims(rng, context)
+                result[v.name] = [[_rand_between(lo, hi, is_flt, dec, rng) for _ in range(c)] for _ in range(r)]
             elif hasattr(v, "_resolve_size"):
                 if v.size is not None:
                     n = v._resolve_size(rng, context)
@@ -369,9 +415,11 @@ def stress_case():
                     n = resolve_bound(v.max_size, context)
                 else:
                     n = 50
-                result[v.name] = [rng.randint(lo, hi) for _ in range(n)]
+                result[v.name] = [_rand_between(lo, hi, is_flt, dec, rng) for _ in range(n)]
             elif hasattr(v, "alphabet"):
-                n = resolve_bound(v.length, context) if v.length else 50
+                n = resolve_bound(v.length, context) if v.length else (
+                    resolve_bound(v.max_length, context) if getattr(v, "max_length", None) else 50
+                )
                 result[v.name] = "".join(rng.choice(v.alphabet) for _ in range(n))
             else:
                 result[v.name] = hi
@@ -385,7 +433,9 @@ def all_equal():
         for v in spec._variables:
             lo = resolve_bound(getattr(v, "min_value", None), context)
             hi = resolve_bound(getattr(v, "max_value", None), context)
-            val = rng.randint(lo, hi)
+            is_flt = type(v).__name__ == "Float"
+            dec = getattr(v, "decimals", 2)
+            val = _rand_between(lo, hi, is_flt, dec, rng)
             result.update(_make_scalar(v, val, context, rng))
         return result
     return all_equal_strategy
@@ -397,8 +447,10 @@ def all_zero():
         for v in spec._variables:
             lo = resolve_bound(getattr(v, "min_value", None), context)
             hi = resolve_bound(getattr(v, "max_value", None), context)
+            is_flt = type(v).__name__ == "Float"
+            zero_val = 0.0 if is_flt else 0
             if lo <= 0 <= hi:
-                result.update(_make_scalar(v, 0, context, rng))
+                result.update(_make_scalar(v, zero_val, context, rng))
             else:
                 result.update(_make_scalar(v, lo, context, rng))
         return result
@@ -413,12 +465,38 @@ def increasing():
             hi = resolve_bound(getattr(v, "max_value", None), context)
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, lo, context, rng))
+            elif type(v).__name__ == "Permutation" and hasattr(v, "_resolve_size"):
+                n = v._resolve_size(rng, context)
+                lo_p = resolve_bound(getattr(v, "min_value", 1), context)
+                result[v.name] = list(range(int(lo_p), int(lo_p + n)))
+            elif hasattr(v, "_resolve_dims"):
+                r, c = v._resolve_dims(rng, context)
+                tot = max(r * c - 1, 1)
+                is_flt = type(v).__name__ == "Float"
+                dec = getattr(v, "decimals", 2)
+                span = hi - lo
+                grid = []
+                for r_idx in range(r):
+                    row = []
+                    for c_idx in range(c):
+                        idx = r_idx * c + c_idx
+                        val = lo + (span * idx / tot) if is_flt else int(lo) + int(idx * span // tot)
+                        row.append(round(val, dec) if is_flt else val)
+                    grid.append(row)
+                result[v.name] = grid
             elif hasattr(v, "_resolve_size"):
                 n = v._resolve_size(rng, context)
-                step = max(1, (hi - lo) // max(n, 1))
-                result[v.name] = [lo + i * step for i in range(n)]
+                tot = max(n - 1, 1)
+                is_flt = type(v).__name__ == "Float"
+                dec = getattr(v, "decimals", 2)
+                span = hi - lo
+                vals = []
+                for i in range(n):
+                    val = lo + (span * i / tot) if is_flt else int(lo) + int(i * span // tot)
+                    vals.append(round(val, dec) if is_flt else val)
+                result[v.name] = vals
             else:
-                result[v.name] = rng.randint(lo, hi)
+                result[v.name] = _rand_between(lo, hi, type(v).__name__ == "Float", getattr(v, "decimals", 2), rng)
         return result
     return _applicable(increasing_strategy, _needs_array("increasing"))
 
@@ -431,12 +509,40 @@ def decreasing():
             hi = resolve_bound(getattr(v, "max_value", None), context)
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, hi, context, rng))
+            elif type(v).__name__ == "Permutation" and hasattr(v, "_resolve_size"):
+                n = v._resolve_size(rng, context)
+                lo_p = resolve_bound(getattr(v, "min_value", 1), context)
+                p = list(range(int(lo_p), int(lo_p + n)))
+                p.reverse()
+                result[v.name] = p
+            elif hasattr(v, "_resolve_dims"):
+                r, c = v._resolve_dims(rng, context)
+                tot = max(r * c - 1, 1)
+                is_flt = type(v).__name__ == "Float"
+                dec = getattr(v, "decimals", 2)
+                span = hi - lo
+                grid = []
+                for r_idx in range(r):
+                    row = []
+                    for c_idx in range(c):
+                        idx = r_idx * c + c_idx
+                        val = hi - (span * idx / tot) if is_flt else int(hi) - int(idx * span // tot)
+                        row.append(round(val, dec) if is_flt else val)
+                    grid.append(row)
+                result[v.name] = grid
             elif hasattr(v, "_resolve_size"):
                 n = v._resolve_size(rng, context)
-                step = max(1, (hi - lo) // max(n, 1))
-                result[v.name] = [hi - i * step for i in range(n)]
+                tot = max(n - 1, 1)
+                is_flt = type(v).__name__ == "Float"
+                dec = getattr(v, "decimals", 2)
+                span = hi - lo
+                vals = []
+                for i in range(n):
+                    val = hi - (span * i / tot) if is_flt else int(hi) - int(i * span // tot)
+                    vals.append(round(val, dec) if is_flt else val)
+                result[v.name] = vals
             else:
-                result[v.name] = rng.randint(lo, hi)
+                result[v.name] = _rand_between(lo, hi, type(v).__name__ == "Float", getattr(v, "decimals", 2), rng)
         return result
     return _applicable(decreasing_strategy, _needs_array("decreasing"))
 
@@ -447,21 +553,37 @@ def mixed_signs():
         for v in spec._variables:
             lo = resolve_bound(getattr(v, "min_value", None), context)
             hi = resolve_bound(getattr(v, "max_value", None), context)
+            is_flt = type(v).__name__ == "Float"
+            dec = getattr(v, "decimals", 2)
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, lo, context, rng))
+            elif type(v).__name__ == "Permutation" and hasattr(v, "_resolve_size"):
+                result.update(_make_scalar(v, 0, context, rng))
+            elif hasattr(v, "_resolve_dims"):
+                r, c = v._resolve_dims(rng, context)
+                grid = []
+                for i in range(r):
+                    row = []
+                    for j in range(c):
+                        if (i + j) % 2 == 0 and lo < 0:
+                            row.append(_rand_between(max(lo, -50), -1 if not is_flt else -0.01, is_flt, dec, rng))
+                        else:
+                            row.append(_rand_between(1 if not is_flt else 0.01, min(hi, 50) if hi > 0 else hi, is_flt, dec, rng))
+                    grid.append(row)
+                result[v.name] = grid
             elif hasattr(v, "_resolve_size"):
                 n = v._resolve_size(rng, context)
                 values = []
                 for i in range(n):
                     if i % 2 == 0 and lo < 0:
-                        values.append(rng.randint(max(lo, -50), -1))
+                        values.append(_rand_between(max(lo, -50), -1 if not is_flt else -0.01, is_flt, dec, rng))
                     else:
-                        values.append(rng.randint(1, min(hi, 50)) if hi > 0 else hi)
+                        values.append(_rand_between(1 if not is_flt else 0.01, min(hi, 50) if hi > 0 else hi, is_flt, dec, rng))
                 result[v.name] = values
             elif lo < 0:
-                result[v.name] = rng.randint(lo, -1)
+                result[v.name] = _rand_between(lo, -1 if not is_flt else -0.01, is_flt, dec, rng)
             else:
-                result[v.name] = rng.randint(max(lo, 1), max(hi, 1))
+                result[v.name] = _rand_between(max(lo, 1 if not is_flt else 0.01), max(hi, 1 if not is_flt else 0.01), is_flt, dec, rng)
         return result
     return _applicable(mixed_signs_strategy, _mixed_signs_applicability)
 
@@ -470,15 +592,23 @@ def positive_only():
     def positive_only_strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            lo = max(1, resolve_bound(getattr(v, "min_value", None), context))
+            is_flt = type(v).__name__ == "Float"
+            dec = getattr(v, "decimals", 2)
+            pos_min = 0.01 if is_flt else 1
+            lo = max(pos_min, resolve_bound(getattr(v, "min_value", None), context))
             hi = resolve_bound(getattr(v, "max_value", None), context)
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, lo, context, rng))
+            elif type(v).__name__ == "Permutation" and hasattr(v, "_resolve_size"):
+                result.update(_make_scalar(v, 0, context, rng))
+            elif hasattr(v, "_resolve_dims"):
+                r, c = v._resolve_dims(rng, context)
+                result[v.name] = [[_rand_between(lo, hi, is_flt, dec, rng) for _ in range(c)] for _ in range(r)]
             elif hasattr(v, "_resolve_size"):
                 n = v._resolve_size(rng, context)
-                result[v.name] = [rng.randint(lo, hi) for _ in range(n)]
+                result[v.name] = [_rand_between(lo, hi, is_flt, dec, rng) for _ in range(n)]
             else:
-                result[v.name] = rng.randint(lo, hi)
+                result[v.name] = _rand_between(lo, hi, is_flt, dec, rng)
         return result
     return _applicable(positive_only_strategy, _positive_only_applicability)
 
@@ -487,17 +617,25 @@ def negative_only():
     def negative_only_strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
+            is_flt = type(v).__name__ == "Float"
+            dec = getattr(v, "decimals", 2)
+            neg_max = -0.01 if is_flt else -1
             lo = resolve_bound(getattr(v, "min_value", None), context)
-            hi = min(-1, resolve_bound(getattr(v, "max_value", None), context))
+            hi = min(neg_max, resolve_bound(getattr(v, "max_value", None), context))
             if lo > hi:
                 hi = lo
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, lo, context, rng))
+            elif type(v).__name__ == "Permutation" and hasattr(v, "_resolve_size"):
+                result.update(_make_scalar(v, 0, context, rng))
+            elif hasattr(v, "_resolve_dims"):
+                r, c = v._resolve_dims(rng, context)
+                result[v.name] = [[_rand_between(lo, hi, is_flt, dec, rng) for _ in range(c)] for _ in range(r)]
             elif hasattr(v, "_resolve_size"):
                 n = v._resolve_size(rng, context)
-                result[v.name] = [rng.randint(lo, hi) for _ in range(n)]
+                result[v.name] = [_rand_between(lo, hi, is_flt, dec, rng) for _ in range(n)]
             else:
-                result[v.name] = rng.randint(lo, hi)
+                result[v.name] = _rand_between(lo, hi, is_flt, dec, rng)
         return result
     return _applicable(negative_only_strategy, _negative_only_applicability)
 
@@ -508,15 +646,24 @@ def alternating():
         for v in spec._variables:
             lo = resolve_bound(getattr(v, "min_value", None), context)
             hi = resolve_bound(getattr(v, "max_value", None), context)
+            is_flt = type(v).__name__ == "Float"
+            dec = getattr(v, "decimals", 2)
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, lo, context, rng))
+            elif type(v).__name__ == "Permutation" and hasattr(v, "_resolve_size"):
+                result.update(_make_scalar(v, 0, context, rng))
+            elif hasattr(v, "_resolve_dims"):
+                r, c = v._resolve_dims(rng, context)
+                a = _rand_between(lo, hi, is_flt, dec, rng)
+                b = _rand_between(lo, hi, is_flt, dec, rng)
+                result[v.name] = [[a if (i + j) % 2 == 0 else b for j in range(c)] for i in range(r)]
             elif hasattr(v, "_resolve_size"):
                 n = v._resolve_size(rng, context)
-                a = rng.randint(lo, hi)
-                b = rng.randint(lo, hi)
+                a = _rand_between(lo, hi, is_flt, dec, rng)
+                b = _rand_between(lo, hi, is_flt, dec, rng)
                 result[v.name] = [a if i % 2 == 0 else b for i in range(n)]
             else:
-                result[v.name] = rng.randint(lo, hi)
+                result[v.name] = _rand_between(lo, hi, is_flt, dec, rng)
         return result
     return alternating_strategy
 
@@ -527,16 +674,25 @@ def boundary_values():
         for v in spec._variables:
             lo = resolve_bound(getattr(v, "min_value", None), context)
             hi = resolve_bound(getattr(v, "max_value", None), context)
+            is_flt = type(v).__name__ == "Float"
+            dec = getattr(v, "decimals", 2)
+            zero_val = 0.0 if is_flt else 0
+            choices = [lo, hi, zero_val if lo <= 0 <= hi else lo]
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, lo, context, rng))
+            elif type(v).__name__ == "Permutation" and hasattr(v, "_resolve_size"):
+                result.update(_make_scalar(v, 0, context, rng))
+            elif hasattr(v, "_resolve_dims"):
+                r, c = v._resolve_dims(rng, context)
+                result[v.name] = [[rng.choice(choices) for _ in range(c)] for _ in range(r)]
             elif hasattr(v, "_resolve_size"):
                 n = v._resolve_size(rng, context)
-                vals = [lo, hi, lo, hi, 0 if lo <= 0 <= hi else lo]
+                vals = [lo, hi, lo, hi, zero_val if lo <= 0 <= hi else lo]
                 while len(vals) < n:
-                    vals.append(rng.randint(lo, hi))
+                    vals.append(_rand_between(lo, hi, is_flt, dec, rng))
                 result[v.name] = vals[:n]
             else:
-                result[v.name] = rng.choice([lo, hi, 0 if lo <= 0 <= hi else lo])
+                result[v.name] = rng.choice(choices)
         return result
     return boundary_values_strategy
 
@@ -547,15 +703,24 @@ def duplicates():
         for v in spec._variables:
             lo = resolve_bound(getattr(v, "min_value", None), context)
             hi = resolve_bound(getattr(v, "max_value", None), context)
+            is_flt = type(v).__name__ == "Float"
+            dec = getattr(v, "decimals", 2)
             if isinstance(v, (Graph, Tree)):
                 result.update(_make_scalar(v, lo, context, rng))
+            elif type(v).__name__ == "Permutation" and hasattr(v, "_resolve_size"):
+                result.update(_make_scalar(v, 0, context, rng))
+            elif hasattr(v, "_resolve_dims"):
+                r, c = v._resolve_dims(rng, context)
+                k = max(1, (r * c) // 3)
+                pool = [_rand_between(lo, hi, is_flt, dec, rng) for _ in range(k)]
+                result[v.name] = [[pool[(i * c + j) % k] for j in range(c)] for i in range(r)]
             elif hasattr(v, "_resolve_size"):
                 n = v._resolve_size(rng, context)
                 k = max(1, n // 3)
-                pool = [rng.randint(lo, hi) for _ in range(k)]
+                pool = [_rand_between(lo, hi, is_flt, dec, rng) for _ in range(k)]
                 result[v.name] = [pool[i % k] for i in range(n)]
             else:
-                result[v.name] = rng.randint(lo, hi)
+                result[v.name] = _rand_between(lo, hi, is_flt, dec, rng)
         return result
     return _applicable(duplicates_strategy, _duplicates_applicability)
 
@@ -564,16 +729,22 @@ def min_length():
     def min_length_strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            if isinstance(v, (Graph, Tree)):
+            if isinstance(v, (Graph, Tree, Permutation)):
                 result.update(_make_scalar(v, 0, context, rng))
+            elif hasattr(v, "_resolve_dims"):
+                result.update(_make_scalar(v, resolve_bound(getattr(v, "min_value", 0), context), context, rng))
             elif hasattr(v, "alphabet"):
-                n = resolve_bound(v.min_length, context) if v.min_length else 1
+                n = int(resolve_bound(v.length, context)) if getattr(v, "length", None) is not None else (
+                    int(resolve_bound(v.min_length, context)) if getattr(v, "min_length", None) is not None else 1
+                )
                 result[v.name] = "".join(rng.choice(v.alphabet) for _ in range(n))
             elif hasattr(v, "_resolve_size"):
                 n = v._resolve_size(rng, context) if _has_explicit_size(v) else 1
                 lo = resolve_bound(getattr(v, "min_value", None), context)
                 hi = resolve_bound(getattr(v, "max_value", None), context)
-                result[v.name] = [rng.randint(lo, hi) for _ in range(n)]
+                is_flt = type(v).__name__ == "Float"
+                dec = getattr(v, "decimals", 2)
+                result[v.name] = [_rand_between(lo, hi, is_flt, dec, rng) for _ in range(n)]
             else:
                 result[v.name] = resolve_bound(getattr(v, "min_value", None), context)
         return result
@@ -584,16 +755,22 @@ def max_length():
     def max_length_strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            if isinstance(v, (Graph, Tree)):
+            if isinstance(v, (Graph, Tree, Permutation)):
                 result.update(_make_scalar(v, 0, context, rng))
+            elif hasattr(v, "_resolve_dims"):
+                result.update(_make_scalar(v, resolve_bound(getattr(v, "max_value", 0), context), context, rng))
             elif hasattr(v, "alphabet"):
-                n = resolve_bound(v.max_length, context) if v.max_length else 100
+                n = int(resolve_bound(v.length, context)) if getattr(v, "length", None) is not None else (
+                    int(resolve_bound(v.max_length, context)) if getattr(v, "max_length", None) is not None else 100
+                )
                 result[v.name] = "".join(rng.choice(v.alphabet) for _ in range(n))
             elif hasattr(v, "_resolve_size"):
                 n = v._resolve_size(rng, context) if _has_explicit_size(v) else 100
                 lo = resolve_bound(getattr(v, "min_value", None), context)
                 hi = resolve_bound(getattr(v, "max_value", None), context)
-                result[v.name] = [rng.randint(lo, hi) for _ in range(n)]
+                is_flt = type(v).__name__ == "Float"
+                dec = getattr(v, "decimals", 2)
+                result[v.name] = [_rand_between(lo, hi, is_flt, dec, rng) for _ in range(n)]
             else:
                 result[v.name] = resolve_bound(getattr(v, "max_value", None), context)
         return result
@@ -604,12 +781,14 @@ def single_char():
     def single_char_strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            if isinstance(v, (Graph, Tree)):
-                result.update(_make_scalar(v, 0, context, rng))
-            elif hasattr(v, "alphabet"):
-                result[v.name] = rng.choice(v.alphabet)
+            if hasattr(v, "alphabet"):
+                n = int(resolve_bound(v.length, context)) if getattr(v, "length", None) is not None else (
+                    int(resolve_bound(v.min_length, context)) if getattr(v, "min_length", None) is not None else 1
+                )
+                ch = rng.choice(v.alphabet)
+                result[v.name] = ch * n
             else:
-                result[v.name] = resolve_bound(getattr(v, "min_value", None), context)
+                result.update(_make_scalar(v, resolve_bound(getattr(v, "min_value", 0), context), context, rng))
         return result
     return _applicable(single_char_strategy, _needs_string("single_char"))
 
@@ -618,14 +797,12 @@ def all_same_char():
     def all_same_char_strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            if isinstance(v, (Graph, Tree)):
-                result.update(_make_scalar(v, 0, context, rng))
-            elif hasattr(v, "alphabet"):
+            if hasattr(v, "alphabet"):
                 ch = rng.choice(v.alphabet)
-                n = resolve_bound(v.length, context) if v.length else rng.randint(5, 20)
+                n = _resolve_string_len(v, context, rng, 5, 20)
                 result[v.name] = ch * n
             else:
-                result[v.name] = resolve_bound(getattr(v, "min_value", None), context)
+                result.update(_make_scalar(v, resolve_bound(getattr(v, "min_value", 0), context), context, rng))
         return result
     return _applicable(all_same_char_strategy, _needs_string("all_same_char"))
 
@@ -634,14 +811,12 @@ def alternating_chars():
     def alternating_chars_strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            if isinstance(v, (Graph, Tree)):
-                result.update(_make_scalar(v, 0, context, rng))
-            elif hasattr(v, "alphabet"):
-                n = resolve_bound(v.length, context) if v.length else rng.randint(5, 20)
+            if hasattr(v, "alphabet"):
+                n = _resolve_string_len(v, context, rng, 5, 20)
                 a, b = rng.sample(v.alphabet, 2) if len(v.alphabet) >= 2 else (v.alphabet[0], v.alphabet[0])
                 result[v.name] = "".join(a if i % 2 == 0 else b for i in range(n))
             else:
-                result[v.name] = resolve_bound(getattr(v, "min_value", None), context)
+                result.update(_make_scalar(v, resolve_bound(getattr(v, "min_value", 0), context), context, rng))
         return result
     return _applicable(alternating_chars_strategy, _needs_string("alternating_chars"))
 
@@ -650,16 +825,14 @@ def palindrome():
     def palindrome_strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            if isinstance(v, (Graph, Tree)):
-                result.update(_make_scalar(v, 0, context, rng))
-            elif hasattr(v, "alphabet"):
-                n = resolve_bound(v.length, context) if v.length else rng.randint(5, 20)
+            if hasattr(v, "alphabet"):
+                n = _resolve_string_len(v, context, rng, 5, 20)
                 half = n // 2
                 left = "".join(rng.choice(v.alphabet) for _ in range(half))
                 mid = rng.choice(v.alphabet) if n % 2 == 1 else ""
                 result[v.name] = left + mid + left[::-1]
             else:
-                result[v.name] = resolve_bound(getattr(v, "min_value", None), context)
+                result.update(_make_scalar(v, resolve_bound(getattr(v, "min_value", 0), context), context, rng))
         return result
     return _applicable(palindrome_strategy, _needs_string("palindrome"))
 
@@ -668,15 +841,13 @@ def repeated_pattern():
     def repeated_pattern_strategy(spec, rng, context):
         result = _SyncDict(context)
         for v in spec._variables:
-            if isinstance(v, (Graph, Tree)):
-                result.update(_make_scalar(v, 0, context, rng))
-            elif hasattr(v, "alphabet"):
-                pat_len = rng.randint(2, 5)
+            if hasattr(v, "alphabet"):
+                n = _resolve_string_len(v, context, rng, 10, 30)
+                pat_len = min(rng.randint(2, 5), max(1, n))
                 pattern = "".join(rng.choice(v.alphabet) for _ in range(pat_len))
-                n = resolve_bound(v.length, context) if v.length else rng.randint(10, 30)
                 result[v.name] = (pattern * (n // pat_len + 1))[:n]
             else:
-                result[v.name] = resolve_bound(getattr(v, "min_value", None), context)
+                result.update(_make_scalar(v, resolve_bound(getattr(v, "min_value", 0), context), context, rng))
         return result
     return _applicable(repeated_pattern_strategy, _needs_string("repeated_pattern"))
 
